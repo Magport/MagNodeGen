@@ -1,0 +1,569 @@
+{
+  "pallet_frame_system": {
+    "index": 0,
+    "optional": false,
+    "parameter": {
+      "RuntimeVersion": {
+        "spec_name": "magnet-parachain",
+        "impl_name": "magnet-parachain",
+        "authoring_version": 1,
+        "spec_version": 1,
+        "impl_version": 0,
+        "apis": "RUNTIME_API_VERSIONS",
+        "transaction_version": 1,
+        "state_version": 1
+      },
+      "RuntimeBlockLength": "5 * 1024 * 1024",
+      "SS58Prefix": 42
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_timestamp": {
+    "index": 1,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_authorship": {
+    "index": 2,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_balances": {
+    "index": 3,
+    "optional": false,
+    "parameter": {
+      "MaxLocks": 50,
+      "ExistentialDeposit": "EXISTENTIAL_DEPOSIT",
+      "MaxReserves": 50,
+      "MaxFreezes": 1
+    },
+    "chain_spec": {
+      "endowed_accounts_supply": "1u128 << 81"
+    },
+    "rpc_mod": false
+  },
+  "pallet_transaction_payment": {
+    "index": 4,
+    "optional": false,
+    "parameter": {
+      "TransactionByteFee": 10,
+      "OperationalFeeMultiplier": 5
+    },
+    "chain_spec": {},
+    "rpc_mod": true
+  },
+  "pallet_sudo": {
+    "index": 5,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {
+      "keyFromSeed": "Alice"
+    },
+    "rpc_mod": false
+  },
+  "cumulus_pallet_parachain_system": {
+    "index": 6,
+    "optional": false,
+    "parameter": {
+      "ReservedXcmpWeight": "MAXIMUM_BLOCK_WEIGHT.saturating_div(4)",
+      "ReservedDmpWeight": "MAXIMUM_BLOCK_WEIGHT.saturating_div(4)",
+      "RelayOrigin": "AggregateMessageOrigin::Parent"
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "parachain_info": {
+    "index": 7,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {
+      "parachainId": 2000
+    },
+    "rpc_mod": false
+  },
+  "pallet_message_queue": {
+    "index": 8,
+    "optional": false,
+    "parameter": {
+      "MessageQueueServiceWeight": 35,
+      "HeapSize": "64 * 1024",
+      "MaxStale": 8
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "cumulus_pallet_aura_ext": {
+    "index": 9,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "cumulus_pallet_xcm": {
+    "index": 10,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "cumulus_pallet_xcmp_queue": {
+    "index": 11,
+    "optional": false,
+    "parameter": {
+      "MaxInboundSuspended": "1_000"
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_session": {
+    "index": 12,
+    "optional": false,
+    "parameter": {
+      "Period": "6 * HOURS",
+      "Offset": 0
+    },
+    "chain_spec": {
+      "keys": []
+    },
+    "rpc_mod": false
+  },
+  "pallet_aura": {
+    "index": 13,
+    "optional": false,
+    "parameter": {
+      "MaxAuthorities": "100_000",
+      "AllowMultipleBlocksPerSlot": "false"
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_collator_selection": {
+    "index": 14,
+    "optional": false,
+    "parameter": {
+      "PotId": "PotStake",
+      "SessionLength": "6 * HOURS",
+      "StakingAdminBodyId": "BodyId::Defense",
+      "MaxCandidates": 100,
+      "MinEligibleCollators": 4,
+      "MaxInvulnerables": 20,
+      "Period": "6 * HOURS"
+    },
+    "chain_spec": {
+      "invulnerables": [],
+      "candidacyBond": "EXISTENTIAL_DEPOSIT * 16"
+    },
+    "rpc_mod": false
+  },
+  "pallet_bulk": {
+    "index": 15,
+    "optional": false,
+    "parameter": {
+      "MaxUrlLength": 300
+    },
+    "chain_spec": {
+      "rpcUrl": "ws://127.0.0.1:8855",
+      "genesisHash": "0x4ea18c8f295ba903acbbed39c70ea0569cf1705fa954a537ffa3b8b7125eaf58"
+    },
+    "rpc_mod": false
+  },
+  "pallet_order": {
+    "index": 16,
+    "optional": false,
+    "parameter": {
+      "SlotWidth": 2,
+      "OrderMaxAmount": "200000000",
+      "TxPoolThreshold": "3000000000"
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_collective": {
+    "index": 17,
+    "optional": false,
+    "parameter": {
+      "CouncilMotionDuration": "7 * DAYS",
+      "CouncilMaxProposals": 10,
+      "CouncilMaxMembers": 25,
+      "MaxCollectivesProposalWeight": 50
+    },
+    "chain_spec": {
+      "members": []
+    },
+    "rpc_mod": false
+  },
+  "pallet_evm_chain_id": {
+    "index": 18,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {
+      "chainId": 2000
+    },
+    "rpc_mod": false
+  },
+  "pallet_evm": {
+    "index": 19,
+    "optional": false,
+    "parameter": {
+      "SuicideQuickClearLimit": 0,
+      "BlockGasLimit": "75_000_000",
+      "MaxPovSize": "5 * 1024 * 1024"
+    },
+    "chain_spec": {
+      "accounts": [
+        {
+          "address": "d43593c715fdd31c61141abd04a99fd6822c8558",
+          "balance": "0xffffffffffffffffffffffffffffffff",
+          "code": "0x0",
+          "nonce": "0x0",
+          "storage": {}
+        },
+        {
+          "address": "6be02d1d3665660d22ff9624b7be0551ee1ac91b",
+          "balance": "0xffffffffffffffffffffffffffffffff",
+          "code": "0x0",
+          "nonce": "0x0",
+          "storage": {}
+        },
+        {
+          "address": "1000000000000000000000000000000000000001",
+          "balance": "1_000_000_000_000_000_000_000_000u128",
+          "code": "0x00",
+          "nonce": "0x1",
+          "storage": {}
+        }
+      ]
+    },
+    "rpc_mod": false
+  },
+  "pallet_ethereum": {
+    "index": 20,
+    "optional": false,
+    "parameter": {
+      "PostBlockAndTxnHashes": "PostLogContent::BlockAndTxnHashes",
+      "ExtraDataLength": 30
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_dynamic_fee": {
+    "index": 21,
+    "optional": false,
+    "parameter": {
+      "BoundDivision": 1024
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_base_fee": {
+    "index": 22,
+    "optional": false,
+    "parameter": {
+      "DefaultBaseFeePerGas": "1_000_000_000",
+      "DefaultElasticity": "125_000",
+      "Ideal": "500_000",
+      "Upper": "1_000_000"
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_hotfix_sufficients": {
+    "index": 23,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_assets": {
+    "index": 24,
+    "optional": false,
+    "parameter": {
+      "AssetDeposit": "10 * UNIT",
+      "AssetAccountDeposit": "deposit(1, 16)",
+      "ApprovalDeposit": "EXISTENTIAL_DEPOSIT",
+      "AssetsStringLimit": 50,
+      "MetadataDepositBase": "deposit(1, 68)",
+      "MetadataDepositPerByte": "deposit(0, 1)",
+      "ExecutiveBody": "BodyId::Executive",
+      "RemoveItemsLimit": 1000
+    },
+    "chain_spec": {
+      "assets": [
+        {
+          "AssetsId": 1,
+          "OwnerFromSeed": "Alice",
+          "IsSufficient": "true",
+          "MinBalance": "1_000_000_0000_0000_0000u128"
+        },
+        {
+          "AssetsId": 2,
+          "OwnerFromSeed": "Bob",
+          "IsSufficient": "true",
+          "MinBalance": "2_000_000_0000_0000_0000u128"
+        }
+      ],
+      "metadata": [
+        {
+          "AssetsId": 1,
+          "Name": "asset-1",
+          "Symbol": "ALT1",
+          "Decimals": 18
+        },
+        {
+          "AssetsId": 2,
+          "Name": "asset-2",
+          "Symbol": "ALT2",
+          "Decimals": 18
+        }
+      ],
+      "accounts": [
+        {
+          "AssetsId": 1,
+          "AccountIdFromSeed": "Alice",
+          "Balance": "500_000_000_0000_0000_0000u128"
+        },
+        {
+          "AssetsId": 2,
+          "AccountIdFromSeed": "Bob",
+          "Balance": "500_000_000_0000_0000_0000u128"
+        }
+      ]
+    },
+    "rpc_mod": false
+  },
+  "pallet_assets_bridge": {
+    "index": 25,
+    "optional": false,
+    "parameter": {
+      "EvmCaller": "[17u8;20]",
+      "ClaimBond": "10 * EXISTENTIAL_DEPOSIT"
+    },
+    "chain_spec": {
+      "adminKey": "root.clone()"
+    },
+    "rpc_mod": false
+  },
+  "pallet_evm_utils": {
+    "index": 26,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_pot": {
+    "index": 27,
+    "optional": false,
+    "parameter": {
+      "PotNames": ["system", "treasury", "maintenance"]
+    },
+    "chain_spec": {},
+    "rpc_mod": true
+  },
+  "pallet_assurance": {
+    "index": 28,
+    "optional": false,
+    "parameter": {
+      "SystemPotName": "system",
+      "DefaultBidThreshold": 8,
+      "DefaultLiquidateThreshold": 0
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_utility": {
+    "index": 29,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_liquidation": {
+    "index": 30,
+    "optional": false,
+    "parameter": {
+      "SystemRatio": 20,
+      "TreasuryRatio": 33,
+      "ProfitDistributionCycle": 10,
+      "ExistDeposit": "EXISTENTIAL_DEPOSIT",
+      "MinLiquidationThreshold": "MILLIUNIT * 20",
+      "SystemAccountName": "system",
+      "TreasuryAccountName": "treasury",
+      "OperationAccountName": "maintenance"
+    },
+    "chain_spec": {
+      "adminKey": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      "systemRatio": "20_000_0000",
+      "treasuryRatio": "33_000_0000",
+      "operationRatios": [
+        {"AccountId": "5GP7etLvS2VLLfUar7Q2TkQkaxHweYnDvrhh3s5hhf8eorPW", "ratio": "15_000_0000"},
+        {"AccountId": "5CFuj7WxZAyinLxoqAJ8NH4yEEVXUUSHi9LRhodC3HyzHvN4", "ratio": "10_000_0000"}
+      ],
+      "collatorRatio": "22_000_0000",
+      "minLiquidationThreshold": "20_000_000_000_000_000u128",
+      "profitDistributionCycle": 10
+    },
+    "rpc_mod": false
+  },
+  "pallet_preimage": {
+    "index": 31,
+    "optional": false,
+    "parameter": {
+      "PreimageBaseDeposit": "deposit(2, 64)",
+      "PreimageByteDeposit": "deposit(0, 1)",
+      "PreimageHoldReason": "Preimage"
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_scheduler": {
+    "index": 32,
+    "optional": false,
+    "parameter": {
+      "MaximumSchedulerWeight": 80,
+      "MaxScheduledPerBlock": 50,
+      "NoPreimagePostponement": 10
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_insecure_randomness_collective_flip": {
+    "index": 33,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_move": {
+    "index": 34,
+    "optional": false,
+    "parameter": {
+      "MultisigReqExpireTime": 50400,
+      "MaxScriptSigners": 8
+    },
+    "chain_spec": {},
+    "rpc_mod": true
+  },
+  "pallet_multisig": {
+    "index": 35,
+    "optional": false,
+    "parameter": {
+      "DepositBase": "228_000_000_000_000",
+      "DepositFactor": "32_000_000_000_000",
+      "MaxSignatories": 20
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_proxy": {
+    "index": 36,
+    "optional": false,
+    "parameter": {
+      "ProxyDepositBase": "160_000_000_000_000",
+      "ProxyDepositFactor": "33_000_000_000_000",
+      "MaxProxies": 100,
+      "MaxPending": 1000,
+      "AnnouncementDepositBase": "16_000_000_000_000",
+      "AnnouncementDepositFactor": "64_000_000_000_000"
+    },
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_conviction_voting": {
+    "index": 37,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_referenda": {
+    "index": 38,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_ranked_collective": {
+    "index": 39,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_referenda_instance2": {
+    "index": 40,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_custom_origins": {
+    "index": 41,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_whitelist": {
+    "index": 42,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "pallet_xcm": {
+    "index": 43,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {
+      "safeXcmVersion": "SAFE_XCM_VERSION"
+    },
+    "rpc_mod": false
+  },
+  "pallet_contracts": {
+    "index": 44,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "runtime_constant": {
+    "BLOCK_GAS_LIMIT": "75_000_000",
+    "MAX_POV_SIZE": "5 * 1024 * 1024"
+  },
+  "chain_spec_dev_constant": {
+    "tokenSymbol": "DOT",
+    "tokenDecimals": 18,
+    "ss58Format": 42,
+    "relay_chain": "rococo-local",
+    "para_id": 2000,
+    "name": "Development",
+    "id": "dev",
+    "collators": {
+      "accountIdFromSeed": ["Alice", "Bob"],
+      "collatorKeysFromSeed": ["Alice", "Bob"]
+    },
+    "endowedAccountsFromSeed": ["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie", "Alice//stash", "Bob//stash", "Charlie//stash", "Dave//stash", "Eve//stash", "Ferdie//stash"],
+    "rootAccountFromSeed": "Alice"
+  },
+  "chain_spec_local_testnet_constant": {
+    "tokenSymbol": "DOT",
+    "tokenDecimals": 18,
+    "ss58Format": 42,
+    "relay_chain": "rococo-local",
+    "para_id": 2000,
+    "name": "Local Testnet",
+    "id": "local_testnet",
+    "collators": {
+      "accountIdFromSeed": ["Alice", "Bob"],
+      "collatorKeysFromSeed": ["Alice", "Bob"]
+    },
+    "endowedAccountsFromSeed": ["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie", "Alice//stash", "Bob//stash", "Charlie//stash", "Dave//stash", "Eve//stash", "Ferdie//stash"],
+    "rootAccountFromSeed": "Alice"
+  }
+}
+
