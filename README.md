@@ -1,5 +1,4 @@
 # magnet-node-generator
-generate magnet parachain by config
 
 Magnet Template Code Generator  process of downloading the Magnet repository from GitHub and generating template code for magnet files based on the `config.json` file.
 
