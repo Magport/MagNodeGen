@@ -21,7 +21,7 @@ def generate_code(json_file, template_file, output_file):
 
 if __name__ == "__main__":
     repo_url = 'https://github.com/Magport/Magnet.git'
-    branch = 'main-develop'
+    branch = 'features/genTemplate'
     dest_dir = 'Magnet'
 
     clone_repo(repo_url, branch, dest_dir)
