@@ -298,6 +298,13 @@ fn testnet_genesis(
 			"genesisHash": U256::from_str("{{ config.pallet_bulk.chain_spec.genesisHash }}").expect("internal U256 is valid; qed")
 		},
 		{% endif -%}
+		{% if config.pallet_on_demand -%}
+        "orderPallet": {
+            "slotWidth": {{ config.pallet_on_demand.chain_spec.slotWidth }},
+            "priceLimit": {{ config.pallet_on_demand.chain_spec.priceLimit }},
+            "gasThreshold": {{ config.pallet_on_demand.chain_spec.gasThreshold }},
+        },
+		{% endif -%}
 		{% if config.pallet_liquidation -%}
 		"liquidation":{
 			"adminKey": Some(root.clone()),
