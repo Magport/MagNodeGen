@@ -172,15 +172,15 @@
     },
     "rpc_mod": false
   },
-  "pallet_order": {
+  "pallet_on_demand": {
     "index": 16,
     "optional": false,
-    "parameter": {
-      "SlotWidth": 2,
-      "OrderMaxAmount": "200000000",
-      "TxPoolThreshold": "3000000000"
+    "parameter": {},
+    "chain_spec": {
+      "slotWidth": 3,
+      "priceLimit": 200000000,
+      "gasThreshold": 10
     },
-    "chain_spec": {},
     "rpc_mod": false
   },
   "pallet_collective": {
@@ -370,7 +370,6 @@
     "parameter": {
       "SystemPotName": "system",
       "DefaultBidThreshold": 8,
-      "DefaultLiquidateThreshold": 0
     },
     "chain_spec": {},
     "rpc_mod": false
