@@ -369,7 +369,7 @@
     "optional": false,
     "parameter": {
       "SystemPotName": "system",
-      "DefaultBidThreshold": 8,
+      "DefaultBidThreshold": 8
     },
     "chain_spec": {},
     "rpc_mod": false
@@ -565,4 +565,3 @@
     "rootAccountFromSeed": "Alice"
   }
 }
-

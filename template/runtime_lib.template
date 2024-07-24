@@ -99,9 +99,14 @@ use weights::{BlockExecutionWeight, ExtrinsicBaseWeight};
 // XCM Imports
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId, PersistedValidationData};
 {%- if config.pallet_bulk %}
-pub use pallet_bulk::{self, BulkGasCost};
+pub use pallet_bulk;
 {% endif -%}
-// pub use pallet_order::{self, OrderGasCost};
+{%- if config.pallet_liquidation %}
+use pallet_liquidation::{BulkGasCost, OrderGasCost};
+{% endif -%}
+{%- if config.pallet_on_demand %}
+pub use pallet_on_demand;
+{% endif -%}
 use xcm::latest::prelude::{
 	Asset as MultiAsset, BodyId, InteriorLocation as InteriorMultiLocation,
 	Junction::PalletInstance, Location as MultiLocation,
@@ -744,65 +749,51 @@ impl pallet_collator_selection::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_order %}
-// pub struct OrderGasCostHandler();
+{%- if config.pallet_on_demand %}
+pub struct OrderGasCostHandler();
 
-// impl<T> OrderGasCost<T> for OrderGasCostHandler
-// where
-//  T: pallet_order::Config,
-//  T::AccountId: From<[u8; 32]>,
-// {
-//  fn gas_cost(
-//      block_number: BlockNumberFor<T>,
-//  ) -> Result<Option<(T::AccountId, Balance)>, sp_runtime::DispatchError> {
-//      let sequece_number = <pallet_order::Pallet<T>>::block_2_sequence(block_number);
-//      if sequece_number.is_none() {
-//          return Ok(None);
-//      }
-//      let order = <pallet_order::Pallet<T>>::order_map(
-//          sequece_number.ok_or(sp_runtime::DispatchError::Other("sequece_number is none"))?,
-//      )
-//      .ok_or(sp_runtime::DispatchError::Other("Not exist order"))?;
-//      let mut r = [0u8; 32];
-//      r.copy_from_slice(order.orderer.encode().as_slice());
-//      let account = T::AccountId::try_from(r)
-//          .map_err(|_| sp_runtime::DispatchError::Other("Account error"))?;
-//      Ok(Some((account, order.price)))
-//  }
-// }
-
-// parameter_types! {
-//  pub const SlotWidth: u32 = {{ config.pallet_order.parameter.SlotWidth }};
-//  pub const OrderMaxAmount:Balance = {{ config.pallet_order.parameter.OrderMaxAmount }};
-//  pub const TxPoolThreshold:Balance = {{ config.pallet_order.parameter.TxPoolThreshold }};
-// }
+impl<T> OrderGasCost<T> for OrderGasCostHandler
+where
+	T: pallet_on_demand::Config,
+	T::AccountId: From<[u8; 32]>,
+{
+	fn gas_cost(
+		block_number: BlockNumberFor<T>,
+	) -> Result<Option<(T::AccountId, Balance)>, sp_runtime::DispatchError> {
+		let sequece_number = <pallet_on_demand::Pallet<T>>::block_2_sequence(block_number);
+		if sequece_number.is_none() {
+			return Ok(None);
+		}
+		let order = <pallet_on_demand::Pallet<T>>::order_map(
+			sequece_number.ok_or(sp_runtime::DispatchError::Other("sequece_number is none"))?,
+		)
+		.ok_or(sp_runtime::DispatchError::Other("Not exist order"))?;
+		Ok(Some((order.orderer, order.price)))
+	}
+}
 {% endif -%}
 
 type EnsureRootOrHalf = EitherOfDiverse<
-    EnsureRoot<AccountId>,
-    pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
 >;
 
-{%- if config.pallet_order %}
-// impl pallet_order::Config for Runtime {
-//  type RuntimeEvent = RuntimeEvent;
-//  type AuthorityId = AuraId;
-//  type Currency = Balances;
-//  type UpdateOrigin = EnsureRootOrHalf;
-//  type OrderMaxAmount = OrderMaxAmount;
-//  type SlotWidth = SlotWidth;
-//  type TxPoolThreshold = TxPoolThreshold;
-//  type WeightInfo = pallet_order::weights::SubstrateWeight<Runtime>;
-// }
+{%- if config.pallet_on_demand %}
+impl pallet_on_demand::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type UpdateOrigin = EnsureRootOrHalf;
+	type WeightInfo = pallet_on_demand::weights::SubstrateWeight<Runtime>;
+	type RelayChainStateProvider = cumulus_pallet_parachain_system::RelaychainDataProvider<Self>;
+}
 {% endif -%}
 
 {%- if config.pallet_bulk %}
-pub struct OrderGasCostHandler();
+pub struct BulkGasCostHandler();
 
-impl<T> BulkGasCost<T> for OrderGasCostHandler
+impl<T> BulkGasCost<T> for BulkGasCostHandler
 where
 	T: pallet_bulk::Config,
-	T::AccountId: From<[u8; 32]>,
 {
 	fn gas_cost(
 		block_number: BlockNumberFor<T>,
@@ -820,24 +811,20 @@ where
 					let balance = price
 						.checked_div(duration)
 						.ok_or(sp_runtime::DispatchError::Other("duration error"))?;
-					let mut r = [0u8; 32];
-					r.copy_from_slice(record.purchaser.encode().as_slice());
-					let account = T::AccountId::try_from(r)
-						.map_err(|_| sp_runtime::DispatchError::Other("Account error"))?;
-					result = Some((account, balance));
+					result = Some((record.purchaser, balance));
 				}
 			}
 		}
 		Ok(result)
 	}
 }
+
 parameter_types! {
 	pub const MaxUrlLength: u32 = {{ config.pallet_bulk.parameter.MaxUrlLength }};
 }
 
 impl pallet_bulk::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type AuthorityId = AuraId;
 	type Currency = Balances;
 	type RelayChainStateProvider = cumulus_pallet_parachain_system::RelaychainDataProvider<Self>;
 	type UpdateOrigin = EnsureRootOrHalf;
@@ -1065,10 +1052,7 @@ parameter_types! {
 
 impl pallet_assurance::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type SystemPotName = SystemPotName;
-	type Liquidate = ();
 	type DefaultBidThreshold = ConstU32<{{ config.pallet_assurance.parameter.DefaultBidThreshold }}>;
-	type DefaultLiquidateThreshold = ConstU128<{{ config.pallet_assurance.parameter.DefaultLiquidateThreshold }}>;
 }
 {% endif -%}
 
@@ -1099,7 +1083,7 @@ impl pallet_liquidation::Config for Runtime {
 	type Currency = Balances;
 	type XcmSender = xcm_config::XcmRouter;
 	type WeightToFee = WeightToFee;
-	type OrderGasCost = ();
+	type OrderGasCost = OrderGasCostHandler;
 	type ExistentialDeposit = ExistDeposit;
 	type SystemAccountName = SystemAccountName;
 	type TreasuryAccountName = TreasuryAccountName;
@@ -1234,6 +1218,71 @@ impl pallet_treasury::Config for Runtime {
     type BenchmarkHelper = runtime_common::impls::benchmarks::TreasuryArguments;
 }
 {% endif -%}
+
+/*
+parameter_types! {
+	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub const ProposalBondMinimum: Balance = 2000 * CENTS;
+	pub const ProposalBondMaximum: Balance = 1 * GRAND;
+	pub const SpendPeriod: BlockNumber = 6 * DAYS;
+	pub const Burn: Permill = Permill::from_perthousand(2);
+	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+	pub const PayoutSpendPeriod: BlockNumber = 30 * DAYS;
+	// The asset's interior location for the paying account. This is the Treasury
+	// pallet instance (which sits at index 15).
+	pub TreasuryInteriorLocation: InteriorMultiLocation = PalletInstance(15).into();
+
+	pub const TipCountdown: BlockNumber = 1 * DAYS;
+	pub const TipFindersFee: Percent = Percent::from_percent(20);
+	pub const TipReportDepositBase: Balance = 100 * CENTS;
+	pub const DataDepositPerByte: Balance = 1 * CENTS;
+	pub const MaxApprovals: u32 = 100;
+	pub const MaxAuthorities: u32 = 100_000;
+	pub const MaxKeys: u32 = 10_000;
+	pub const MaxPeerInHeartbeats: u32 = 10_000;
+	pub const MaxBalance: Balance = Balance::max_value();
+}
+
+impl pallet_treasury::Config for Runtime {
+	type PalletId = TreasuryPalletId;
+	type Currency = Balances;
+	type ApproveOrigin = EitherOfDiverse<EnsureRoot<AccountId>, Treasurer>;
+	type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, Treasurer>;
+	type RuntimeEvent = RuntimeEvent;
+	type OnSlash = Treasury;
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = ProposalBondMinimum;
+	type ProposalBondMaximum = ProposalBondMaximum;
+	type SpendPeriod = SpendPeriod;
+	type Burn = Burn;
+	//type BurnDestination = Society;
+	type BurnDestination = ();
+	type MaxApprovals = MaxApprovals;
+	type WeightInfo = weights::pallet_treasury::WeightInfo<Runtime>;
+	//type SpendFunds = Bounties;
+	type SpendFunds = ();
+	type SpendOrigin = TreasurySpender;
+	/*
+	type AssetKind = VersionedLocatableAsset;
+	type Beneficiary = VersionedMultiLocation;
+	type BeneficiaryLookup = IdentityLookup<Self::Beneficiary>;
+	type Paymaster = PayOverXcm<
+		TreasuryInteriorLocation,
+		crate::xcm_config::XcmRouter,
+		crate::XcmPallet,
+		ConstU32<{ 6 * HOURS }>,
+		Self::Beneficiary,
+		Self::AssetKind,
+		LocatableAssetConverter,
+		VersionedMultiLocationConverter,
+	>;
+	type BalanceConverter = AssetRate;
+	type PayoutPeriod = PayoutSpendPeriod;
+	*/
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = runtime_common::impls::benchmarks::TreasuryArguments;
+}
+*/
 
 {%- if config.pallet_insecure_randomness_collective_flip %}
 impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
@@ -1452,8 +1501,8 @@ construct_runtime!(
         {% endif -%}
 
         //Magnet
-        {% if config.pallet_order -%}
-        // OrderPallet: pallet_order = 51,
+        {% if config.pallet_on_demand -%}
+        // OrderPallet: pallet_on_demand = 51,
         {% endif -%}
         {% if config.pallet_evm_utils -%}
         EVMUtils: pallet_evm_utils = 60,
@@ -1504,7 +1553,7 @@ mod benches {
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_bulk, BulkPallet]
-		// [pallet_order, OrderPallet]
+		[pallet_on_demand, OrderPallet]
 		[pallet_move, MoveModule]
 		[pallet_multisig, Multisig]
 		[pallet_proxy, Proxy]
@@ -1864,40 +1913,20 @@ impl_runtime_apis! {
 			ConsensusHook::can_build_upon(included_hash, slot)
 		}
 	}
-{%- if config.pallet_order %}
-	// impl magnet_primitives_order::OrderRuntimeApi<Block, Balance, AuraId> for Runtime {
+{%- if config.pallet_on_demand %}
+	impl mp_coretime_on_demand::OrderRuntimeApi<Block, Balance> for Runtime {
 
-	// 	fn slot_width()-> u32{
-	// 		OrderPallet::slot_width()
-	// 	}
-	// 	fn order_max_amount() -> Balance {
-	// 		OrderPallet::order_max_amount()
-	// 	}
-	// 	fn sequence_number()-> u64 {
-	// 		OrderPallet::sequence_number()
-	// 	}
+		fn slot_width()-> u32{
+			OrderPallet::slot_width()
+		}
+		fn order_max_amount() -> Balance {
+			OrderPallet::price_limit()
+		}
 
-	// 	fn current_relay_height()-> u32 {
-	// 		OrderPallet::current_relay_height()
-	// 	}
-
-	// 	fn order_placed(
-	// 		relay_storage_proof: sp_trie::StorageProof,
-	// 		validation_data: PersistedValidationData,
-	// 		para_id:ParaId,
-	// 	)-> Option<AuraId> {
-	// 		OrderPallet::order_placed(relay_storage_proof, validation_data, para_id)
-	// 	}
-
-	// 	fn reach_txpool_threshold(gas_balance:Balance) -> bool {
-	// 		OrderPallet::reach_txpool_threshold(gas_balance)
-	// 	}
-
-
-	// 	fn order_executed(sequence_number:u64) -> bool {
-	// 		OrderPallet::order_executed(sequence_number)
-	// 	}
-	// }
+		fn reach_txpool_threshold(gas_balance:Balance, core_price:Balance) -> bool {
+			OrderPallet::reach_txpool_threshold(gas_balance, core_price)
+		}
+	}
 {% endif -%}
 {%- if config.pallet_bulk -%}
 	impl mp_coretime_bulk::BulkRuntimeApi<Block> for Runtime {
@@ -1914,7 +1943,7 @@ impl_runtime_apis! {
 
 {%- if config.pallet_pot %}
 	impl mp_system::OnRelayChainApi<Block> for Runtime {
-		fn on_relaychain(block_number: u32) -> i32 {
+		fn on_relaychain(block_number: u32) -> bool {
 			Assurance::on_relaychain(block_number)
 		}
 	}
