@@ -7,7 +7,12 @@
     <cargoProject FILE="$PROJECT_DIR$/Magnet/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="785f056b-393d-49bc-bd2d-64cea20ccd7f" name="Changes" comment="" />
+    <list default="true" id="785f056b-393d-49bc-bd2d-64cea20ccd7f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/runtime_lib.template" beforeDir="false" afterPath="$PROJECT_DIR$/template/runtime_lib.template" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -53,7 +58,7 @@
       <option name="presentableId" value="Default" />
       <updated>1720760644678</updated>
       <workItem from="1720760645878" duration="52923000" />
-      <workItem from="1721188131554" duration="2769000" />
+      <workItem from="1721188131554" duration="7674000" />
     </task>
     <servers />
   </component>
