@@ -11,7 +11,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/template/runtime_lib.template" beforeDir="false" afterPath="$PROJECT_DIR$/template/runtime_lib.template" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/chain_spec.template" beforeDir="false" afterPath="$PROJECT_DIR$/template/chain_spec.template" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,6 +59,7 @@
       <updated>1720760644678</updated>
       <workItem from="1720760645878" duration="52923000" />
       <workItem from="1721188131554" duration="7674000" />
+      <workItem from="1721891845534" duration="1112000" />
     </task>
     <servers />
   </component>
