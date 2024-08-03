@@ -103,6 +103,14 @@ def task_status(task_id):
     task = tasks.get(task_id)
     if not task:
         abort(404, description="Not Found: Invalid taskId")
+
+    if task['status'] == 'completed':
+        zip_file_path = task['path']
+        if os.path.exists(zip_file_path):
+            return send_file(zip_file_path, as_attachment=True)
+        else:
+            abort(500, description="Internal Server Error: ZIP file not found")
+
     return jsonify(task)
 
 def clone_repo(repo_url, branch, dest_dir):
