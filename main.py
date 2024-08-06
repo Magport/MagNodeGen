@@ -102,23 +102,28 @@ def generate_code_endpoint():
     generate_code(config_path, 'template/chain_spec.template', os.path.join(dest_dir, 'node/src/chain_spec.rs'))
     generate_code(config_path, 'template/rpc_mod.template', os.path.join(dest_dir, 'node/src/rpc/mod.rs'))
 
-    shutil.make_archive(task_dir, 'zip', task_dir)
+    zip_file_path = shutil.make_archive(task_dir, 'zip', task_dir)
 
-    tasks[task_id] = {'status': 'completed', 'path': f'{task_dir}.zip'}
+    tasks[task_id] = {'status': 'completed', 'path': zip_file_path}
+    print(f'Task {task_id} completed, zip file path: {tasks[task_id]["path"]}')
     return jsonify({'status': 'Task started', 'taskId': task_id})
 
 @app.route('/task-status/<task_id>', methods=['GET'])
 @authenticate
 def task_status(task_id):
+    print(f'Checking status for task {task_id}')
     task = tasks.get(task_id)
     if not task:
+        print(f'Task {task_id} not found in tasks')
         abort(404, description="Not Found: Invalid taskId")
 
     if task['status'] == 'completed':
         zip_file_path = task['path']
+        print(f'Task {task_id} completed, zip file path: {zip_file_path}')
         if os.path.exists(zip_file_path):
             return send_file(zip_file_path, as_attachment=True)
         else:
+            print(f'ZIP file {zip_file_path} not found')
             abort(500, description="Internal Server Error: ZIP file not found")
 
     return jsonify(task)
@@ -142,4 +147,4 @@ def generate_code(json_file, template_file, output_file):
 
 if __name__ == "__main__":
     load_api_keys()
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
