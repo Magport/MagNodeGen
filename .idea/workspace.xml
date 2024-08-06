@@ -8,10 +8,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="785f056b-393d-49bc-bd2d-64cea20ccd7f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tasks/8f401dc7b755d4c7150e01be835d3847/Magnet/node/src/chain_spec.rs" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/8f401dc7b755d4c7150e01be835d3847/Magnet/node/src/chain_spec.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tasks/8f401dc7b755d4c7150e01be835d3847/Magnet/node/src/rpc/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/8f401dc7b755d4c7150e01be835d3847/Magnet/node/src/rpc/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tasks/8f401dc7b755d4c7150e01be835d3847/Magnet/runtime/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/tasks/8f401dc7b755d4c7150e01be835d3847/Magnet/runtime/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/chain_spec.template" beforeDir="false" afterPath="$PROJECT_DIR$/template/chain_spec.template" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/rpc_mod.template" beforeDir="false" afterPath="$PROJECT_DIR$/template/rpc_mod.template" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/template/runtime_lib.template" beforeDir="false" afterPath="$PROJECT_DIR$/template/runtime_lib.template" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +67,7 @@
       <workItem from="1721891845534" duration="1828000" />
       <workItem from="1722326840050" duration="2737000" />
       <workItem from="1722415145735" duration="8000" />
-      <workItem from="1722665716921" duration="4962000" />
+      <workItem from="1722665716921" duration="8915000" />
     </task>
     <servers />
   </component>
