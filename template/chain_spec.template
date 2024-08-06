@@ -191,12 +191,12 @@ fn testnet_genesis(
 	};
 
 	serde_json::json!({
-	    {% if config.pallet_balances -%}
+	    {% if config.pallet_balances is defined -%}
 		"balances": {
 			"balances": endowed_accounts.iter().cloned().map(|k| (k, {{ config.pallet_balances.chain_spec.endowed_accounts_supply }})).collect::<Vec<_>>(),
 		},
 		{% endif -%}
-		{% if config.pallet_assets -%}
+		{% if config.pallet_assets is defined -%}
 		"assets": {
 			"assets": vec![
             {% for asset in config.pallet_assets.chain_spec.assets %}
@@ -231,12 +231,12 @@ fn testnet_genesis(
 			],
 		},
 		{% endif %}
-		{% if config.pallet_assets_bridge -%}
+		{% if config.pallet_assets_bridge is defined -%}
 		"assetsBridge": {
 			"adminKey": Some(root.clone()),
 		},
 		{% endif -%}
-		{% if config.pallet_collective -%}
+		{% if config.pallet_collective is defined -%}
 		"council": {
 			"members": endowed_accounts
 				.iter()
@@ -245,18 +245,18 @@ fn testnet_genesis(
 				.collect::<Vec<_>>(),
 		},
 		{% endif -%}
-		{% if config.parachain_info -%}
+		{% if config.parachain_info is defined -%}
 		"parachainInfo": {
 			"parachainId": {{ config.parachain_info.chain_spec.parachainId }}.into(),
 		},
 		{% endif -%}
-		{% if config.pallet_collator_selection -%}
+		{% if config.pallet_collator_selection is defined -%}
 		"collatorSelection": {
 			"invulnerables": invulnerables.iter().cloned().map(|(acc, _)| acc).collect::<Vec<_>>(),
 			"candidacyBond": EXISTENTIAL_DEPOSIT * 16,
 		},
 		{% endif -%}
-		{% if config.pallet_session -%}
+		{% if config.pallet_session is defined -%}
 		"session": {
 			"keys": invulnerables
 				.into_iter()
@@ -272,46 +272,46 @@ fn testnet_genesis(
 		{% endif -%}
 		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
 		// of this.
-		{% if config.pallet_xcm -%}
+		{% if config.pallet_xcm is defined -%}
 		"polkadotXcm": {
 			"safeXcmVersion": Some(SAFE_XCM_VERSION),
 		},
 		{% endif -%}
-		{% if config.pallet_sudo -%}
+		{% if config.pallet_sudo is defined -%}
 		"sudo": { "key": Some(get_account_id_from_seed::<sr25519::Public>("{{ config.pallet_sudo.chain_spec.keyFromSeed }}")) },
 		{% endif -%}
 
 		// EVM compatibility
-		{% if config.pallet_evm_chain_id -%}
+		{% if config.pallet_evm_chain_id is defined -%}
 		"evmChainId": {
 			"chainId": u64::from(u32::from({{ config.pallet_evm_chain_id.chain_spec.chainId }})),
 		},
 		{% endif -%}
 
-        {% if config.pallet_evm -%}
+        {% if config.pallet_evm is defined -%}
 		"evm": { "accounts": evm_accounts },
 		{% endif %}
-		{% if config.pallet_move -%}
+		{% if config.pallet_move is defined -%}
 		//Move VM
 		"moveModule": {
 			"changeDefaultMoveStdlibBundleTo": Option::<Vec<u8>>::None,
 			"changeDefaultSubstrateStdlibBundleTo": Option::<Vec<u8>>::None,
 		},
 		{% endif -%}
-		{% if config.pallet_bulk -%}
+		{% if config.pallet_bulk is defined -%}
 		"bulkPallet":{
 			"rpcUrl": b"{{ config.pallet_bulk.chain_spec.rpcUrl }}".to_vec(),
 			"genesisHash": U256::from_str("{{ config.pallet_bulk.chain_spec.genesisHash }}").expect("internal U256 is valid; qed")
 		},
 		{% endif -%}
-		{% if config.pallet_on_demand -%}
+		{% if config.pallet_on_demand is defined -%}
         "orderPallet": {
             "slotWidth": {{ config.pallet_on_demand.chain_spec.slotWidth }},
             "priceLimit": {{ config.pallet_on_demand.chain_spec.priceLimit }},
             "gasThreshold": {{ config.pallet_on_demand.chain_spec.gasThreshold }},
         },
 		{% endif -%}
-		{% if config.pallet_liquidation -%}
+		{% if config.pallet_liquidation is defined -%}
 		"liquidation":{
 			"adminKey": Some(root.clone()),
 			"systemRatio": {{ config.pallet_liquidation.chain_spec.systemRatio }},
