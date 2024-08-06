@@ -68,16 +68,16 @@ use frame_system::{
 	pallet_prelude::BlockNumberFor,
 	EnsureRoot, EnsureSigned,
 };
-{%- if config.pallet_balances %}
+{%- if config.pallet_balances is defined %}
 pub use pallet_balances::{Call as BalancesCall, NegativeImbalance};
 {%- endif -%}
-{%- if config.pallet_move %}
+{%- if config.pallet_move is defined %}
 use pallet_move::api::{ModuleAbi, MoveApiEstimation};
 {%- endif -%}
-{%- if config.pallet_xcm %}
+{%- if config.pallet_xcm is defined %}
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 {%- endif -%}
-{%- if config.pallet_aura %}
+{%- if config.pallet_aura is defined %}
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 {% endif -%}
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
@@ -98,13 +98,13 @@ use sp_runtime::SaturatedConversion;
 use weights::{BlockExecutionWeight, ExtrinsicBaseWeight};
 // XCM Imports
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId, PersistedValidationData};
-{%- if config.pallet_bulk %}
+{%- if config.pallet_bulk is defined %}
 pub use pallet_bulk;
 {% endif -%}
-{%- if config.pallet_liquidation %}
+{%- if config.pallet_liquidation is defined %}
 use pallet_liquidation::{BulkGasCost, OrderGasCost};
 {% endif -%}
-{%- if config.pallet_on_demand %}
+{%- if config.pallet_on_demand is defined %}
 pub use pallet_on_demand;
 {% endif -%}
 use xcm::latest::prelude::{
@@ -113,7 +113,7 @@ use xcm::latest::prelude::{
 };
 use xcm_executor::XcmExecutor;
 
-{%- if config.pallet_evm %}
+{%- if config.pallet_evm is defined %}
 use fp_evm::weight_per_gas;
 use fp_rpc::TransactionStatus;
 use pallet_ethereum::{
@@ -124,14 +124,14 @@ use pallet_evm::{
 	Account as EVMAccount, EnsureAddressTruncated, FeeCalculator, HashedAddressMapping, Runner,
 };
 {% endif -%}
-{%- if config.pallet_move %}
+{%- if config.pallet_move is defined %}
 pub use pallet_move;
 {% endif -%}
 
 mod precompiles;
 use precompiles::FrontierPrecompiles;
 
-{% if config.pallet_pot %}
+{% if config.pallet_pot is defined %}
 use pallet_pot::PotNameBtreemap;
 {% endif %}
 
@@ -502,7 +502,7 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-{%- if config.pallet_timestamp %}
+{%- if config.pallet_timestamp is defined %}
 impl pallet_timestamp::Config for Runtime {
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = u64;
@@ -515,14 +515,14 @@ impl pallet_timestamp::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_authorship %}
+{%- if config.pallet_authorship is defined %}
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
 	type EventHandler = (CollatorSelection,);
 }
 {% endif -%}
 
-{%- if config.pallet_balances %}
+{%- if config.pallet_balances is defined %}
 parameter_types! {
 	pub const ExistentialDeposit: Balance = {{config.pallet_balances.parameter.ExistentialDeposit}};
 }
@@ -546,7 +546,7 @@ impl pallet_balances::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_liquidation %}
+{%- if config.pallet_liquidation is defined %}
 use pallet_liquidation;
 pub struct MagnetToStakingPot<R>(PhantomData<R>);
 impl<R> OnUnbalanced<NegativeImbalance<R>> for MagnetToStakingPot<R>
@@ -581,7 +581,7 @@ where
 }
 {% endif -%}
 
-{%- if config.pallet_transaction_payment %}
+{%- if config.pallet_transaction_payment is defined %}
 parameter_types! {
 	/// Relay Chain `TransactionByteFee` / 10
 	pub const TransactionByteFee: Balance = {{config.pallet_transaction_payment.parameter.TransactionByteFee}} * MICROUNIT;
@@ -598,7 +598,7 @@ impl pallet_transaction_payment::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_sudo %}
+{%- if config.pallet_sudo is defined %}
 impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -606,7 +606,7 @@ impl pallet_sudo::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.cumulus_pallet_parachain_system %}
+{%- if config.cumulus_pallet_parachain_system is defined %}
 parameter_types! {
 	pub const ReservedXcmpWeight: Weight = {{config.cumulus_pallet_parachain_system.parameter.ReservedXcmpWeight}};
 	pub const ReservedDmpWeight: Weight = {{config.cumulus_pallet_parachain_system.parameter.ReservedDmpWeight}};
@@ -635,11 +635,11 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.parachain_info %}
+{%- if config.parachain_info is defined %}
 impl parachain_info::Config for Runtime {}
 {% endif -%}
 
-{%- if config.pallet_message_queue %}
+{%- if config.pallet_message_queue is defined %}
 parameter_types! {
 	pub MessageQueueServiceWeight: Weight = Perbill::from_percent({{ config.pallet_message_queue.parameter.MessageQueueServiceWeight }}) * RuntimeBlockWeights::get().max_block;
 }
@@ -667,11 +667,11 @@ impl pallet_message_queue::Config for Runtime {
 }
 {% endif -%}
 
-{% if config.cumulus_pallet_aura_ext %}
+{% if config.cumulus_pallet_aura_ext is defined %}
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 {% endif -%}
 
-{%- if config.cumulus_pallet_xcmp_queue %}
+{%- if config.cumulus_pallet_xcmp_queue is defined %}
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	// Enqueue XCMP messages from siblings for later processing.
@@ -686,7 +686,7 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_session %}
+{%- if config.pallet_session is defined %}
 parameter_types! {
 	pub const Period: u32 = {{ config.pallet_session.parameter.Period }};
 	pub const Offset: u32 = {{ config.pallet_session.parameter.Offset }};
@@ -707,7 +707,7 @@ impl pallet_session::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_aura %}
+{%- if config.pallet_aura is defined %}
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
@@ -718,7 +718,7 @@ impl pallet_aura::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_collator_selection %}
+{%- if config.pallet_collator_selection is defined %}
 parameter_types! {
 	pub const PotId: PalletId = PalletId(*b"{{ config.pallet_collator_selection.parameter.PotId }}");
 	pub const SessionLength: BlockNumber = {{ config.pallet_collator_selection.parameter.SessionLength }};
@@ -749,7 +749,7 @@ impl pallet_collator_selection::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_on_demand %}
+{%- if config.pallet_on_demand is defined %}
 pub struct OrderGasCostHandler();
 
 impl<T> OrderGasCost<T> for OrderGasCostHandler
@@ -778,7 +778,7 @@ type EnsureRootOrHalf = EitherOfDiverse<
 	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
 >;
 
-{%- if config.pallet_on_demand %}
+{%- if config.pallet_on_demand is defined %}
 impl pallet_on_demand::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
@@ -788,7 +788,7 @@ impl pallet_on_demand::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_bulk %}
+{%- if config.pallet_bulk is defined %}
 pub struct BulkGasCostHandler();
 
 impl<T> BulkGasCost<T> for BulkGasCostHandler
@@ -833,7 +833,7 @@ impl pallet_bulk::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_collective %}
+{%- if config.pallet_collective is defined %}
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = {{ config.pallet_collective.parameter.CouncilMotionDuration }};
 	pub const CouncilMaxProposals: u32 = {{ config.pallet_collective.parameter.CouncilMaxProposals }};
@@ -856,11 +856,11 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_evm_chain_id %}
+{%- if config.pallet_evm_chain_id is defined %}
 impl pallet_evm_chain_id::Config for Runtime {}
 {% endif -%}
 
-{%- if config.pallet_evm %}
+{%- if config.pallet_evm is defined %}
 pub struct FindAuthorTruncated<F>(PhantomData<F>);
 impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	fn find_author<'a, I>(digests: I) -> Option<H160>
@@ -912,7 +912,7 @@ impl pallet_evm::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_ethereum %}
+{%- if config.pallet_ethereum is defined %}
 parameter_types! {
 	pub const PostBlockAndTxnHashes: PostLogContent = {{ config.pallet_ethereum.parameter.PostBlockAndTxnHashes }};
 }
@@ -925,7 +925,7 @@ impl pallet_ethereum::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_dynamic_fee %}
+{%- if config.pallet_dynamic_fee is defined %}
 parameter_types! {
 	pub BoundDivision: U256 = U256::from({{ config.pallet_dynamic_fee.parameter.BoundDivision }});
 }
@@ -935,7 +935,7 @@ impl pallet_dynamic_fee::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_base_fee %}
+{%- if config.pallet_base_fee is defined %}
 parameter_types! {
 	pub DefaultBaseFeePerGas: U256 = U256::from({{ config.pallet_base_fee.parameter.DefaultBaseFeePerGas }});
 	pub DefaultElasticity: Permill = Permill::from_parts({{ config.pallet_base_fee.parameter.DefaultElasticity }});
@@ -962,14 +962,14 @@ impl pallet_base_fee::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_hotfix_sufficients %}
+{%- if config.pallet_hotfix_sufficients is defined %}
 impl pallet_hotfix_sufficients::Config for Runtime {
 	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
 	type WeightInfo = pallet_hotfix_sufficients::weights::SubstrateWeight<Self>;
 }
 {% endif -%}
 
-{%- if config.pallet_assets %}
+{%- if config.pallet_assets is defined %}
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	(items as Balance * 20 * UNIT + (bytes as Balance) * 100 * MICROUNIT) / 100
 }
@@ -1009,7 +1009,7 @@ impl pallet_assets::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_assets_bridge %}
+{%- if config.pallet_assets_bridge is defined %}
 parameter_types! {
 	// 0x1111111111111111111111111111111111111111
 	pub EvmCaller: H160 = H160::from_slice(&{{ config.pallet_assets_bridge.parameter.EvmCaller }}[..]);
@@ -1022,13 +1022,13 @@ impl pallet_assets_bridge::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_evm_utils %}
+{%- if config.pallet_evm_utils is defined %}
 impl pallet_evm_utils::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 }
 {% endif -%}
 
-{%- if config.pallet_pot %}
+{%- if config.pallet_pot is defined %}
 parameter_types! {
 	pub const PotNames: [&'static str;{{ config.pallet_pot.parameter.PotNames | length }}] = [{% for name in config.pallet_pot.parameter.PotNames %}"{{ name }}"{%- if not loop.last %}, {% endif %}{% endfor %}];
 	pub Pots: BTreeMap<String, AccountId> = pallet_pot
@@ -1045,7 +1045,7 @@ impl pallet_pot::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_assurance %}
+{%- if config.pallet_assurance is defined %}
 parameter_types! {
 	pub const SystemPotName: &'static str = "{{ config.pallet_assurance.parameter.SystemPotName }}";
 }
@@ -1056,7 +1056,7 @@ impl pallet_assurance::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_utility %}
+{%- if config.pallet_utility is defined %}
 impl pallet_utility::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -1065,7 +1065,7 @@ impl pallet_utility::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_liquidation %}
+{%- if config.pallet_liquidation is defined %}
 parameter_types! {
 	pub const SystemRatio: Perbill = Perbill::from_percent({{ config.pallet_liquidation.parameter.SystemRatio }}); // 20% for system
 	pub const TreasuryRatio: Perbill = Perbill::from_percent({{ config.pallet_liquidation.parameter.TreasuryRatio }}); // 33% for treasury
@@ -1091,7 +1091,7 @@ impl pallet_liquidation::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_preimage %}
+{%- if config.pallet_preimage is defined %}
 parameter_types! {
 	pub const PreimageBaseDeposit: Balance = {{ config.pallet_preimage.parameter.PreimageBaseDeposit }};
 	pub const PreimageByteDeposit: Balance = {{ config.pallet_preimage.parameter.PreimageByteDeposit }};
@@ -1112,7 +1112,7 @@ impl pallet_preimage::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_scheduler %}
+{%- if config.pallet_scheduler is defined %}
 parameter_types! {
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent({{ config.pallet_scheduler.parameter.MaximumSchedulerWeight }}) *
 		RuntimeBlockWeights::get().max_block;
@@ -1154,7 +1154,7 @@ impl pallet_scheduler::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_treasury %}
+{%- if config.pallet_treasury is defined %}
 parameter_types! {
     pub const ProposalBond: Permill = Permill::from_percent(5);
     pub const ProposalBondMinimum: Balance = 2000 * CENTS;
@@ -1284,11 +1284,11 @@ impl pallet_treasury::Config for Runtime {
 }
 */
 
-{%- if config.pallet_insecure_randomness_collective_flip %}
+{%- if config.pallet_insecure_randomness_collective_flip is defined %}
 impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
 {% endif -%}
 
-{%- if config.pallet_move %}
+{%- if config.pallet_move is defined %}
 parameter_types! {
 	pub const MultisigReqExpireTime: BlockNumber = {{ config.pallet_move.parameter.MultisigReqExpireTime }};
 	pub const MaxScriptSigners: u32 = {{ config.pallet_move.parameter.MaxScriptSigners }};
@@ -1304,7 +1304,7 @@ impl pallet_move::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_multisig %}
+{%- if config.pallet_multisig is defined %}
 impl pallet_multisig::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -1316,7 +1316,7 @@ impl pallet_multisig::Config for Runtime {
 }
 {% endif -%}
 
-{%- if config.pallet_proxy %}
+{%- if config.pallet_proxy is defined %}
 #[derive(
 	Copy,
 	Clone,
@@ -1378,165 +1378,165 @@ impl pallet_proxy::Config for Runtime {
 construct_runtime!(
     pub enum Runtime
     {
-        {% if config.pallet_frame_system -%}
+        {% if config.pallet_frame_system is defined -%}
         // System support stuff.
         System: frame_system = 0,
         {% endif -%}
-        {% if config.cumulus_pallet_parachain_system -%}
+        {% if config.cumulus_pallet_parachain_system is defined -%}
         ParachainSystem: cumulus_pallet_parachain_system = 1,
         {% endif -%}
-        {% if config.pallet_timestamp -%}
+        {% if config.pallet_timestamp is defined -%}
         Timestamp: pallet_timestamp = 2,
         {% endif -%}
-        {% if config.parachain_info -%}
+        {% if config.parachain_info is defined -%}
         ParachainInfo: parachain_info = 3,
         {% endif -%}
-        {% if config.pallet_utility -%}
+        {% if config.pallet_utility is defined -%}
         Utility: pallet_utility = 4,
         {% endif %}
 
-        {%- if config.pallet_balances -%}
+        {%- if config.pallet_balances is defined -%}
         // Monetary stuff.
         Balances: pallet_balances = 10,
         {% endif -%}
-        {% if config.pallet_transaction_payment -%}
+        {% if config.pallet_transaction_payment is defined -%}
         TransactionPayment: pallet_transaction_payment = 11,
         {% endif -%}
-        {% if config.pallet_assets -%}
+        {% if config.pallet_assets is defined -%}
         Assets: pallet_assets = 12,
         {% endif -%}
-        {% if config.pallet_assets_bridge -%}
+        {% if config.pallet_assets_bridge is defined -%}
         AssetsBridge: pallet_assets_bridge = 13,
         {% endif %}
 
         // Governance
-        {% if config.pallet_sudo -%}
+        {% if config.pallet_sudo is defined -%}
         Sudo: pallet_sudo = 14,
         {% endif -%}
-        {% if config.pallet_conviction_voting -%}
+        {% if config.pallet_conviction_voting is defined -%}
         ConvictionVoting: pallet_conviction_voting = 16,
         {% endif -%}
-        {% if config.pallet_referenda -%}
+        {% if config.pallet_referenda is defined -%}
         Referenda: pallet_referenda = 17,
         {% endif -%}
-        {% if config.pallet_ranked_collective -%}
+        {% if config.pallet_ranked_collective is defined -%}
         //  pub type FellowshipCollectiveInstance = pallet_ranked_collective::Instance1;
         FellowshipCollective: pallet_ranked_collective::<Instance1> = 18,
         {% endif -%}
-        {% if config.pallet_referenda_instance2 -%}
+        {% if config.pallet_referenda_instance2 is defined -%}
         // pub type FellowshipReferendaInstance = pallet_referenda::Instance2;
         FellowshipReferenda: pallet_referenda::<Instance2> = 19,
         {% endif -%}
-        {% if config.pallet_custom_origins -%}
+        {% if config.pallet_custom_origins is defined -%}
         Origins: pallet_custom_origins::{Origin} = 52,
         {% endif -%}
-        {% if config.pallet_whitelist -%}
+        {% if config.pallet_whitelist is defined -%}
         Whitelist: pallet_whitelist = 53,
         {% endif %}
 
-        {% if config.pallet_scheduler -%}
+        {% if config.pallet_scheduler is defined -%}
         // System scheduler.
         Scheduler: pallet_scheduler = 54,
         {% endif %}
 
-        {% if config.pallet_preimage -%}
+        {% if config.pallet_preimage is defined -%}
         // Preimage registrar.
         Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>, HoldReason} = 55,
         {% endif -%}
 
-        {% if config.pallet_collective -%}
+        {% if config.pallet_collective is defined -%}
         //Old Governance
         Council: pallet_collective::<Instance1> = 56,
         {% endif -%}
 
-        {% if config.pallet_authorship -%}
+        {% if config.pallet_authorship is defined -%}
         // Collator support. The order of these 4 are important and shall not change.
         Authorship: pallet_authorship = 20,
         {% endif -%}
-        {% if config.pallet_collator_selection -%}
+        {% if config.pallet_collator_selection is defined -%}
         CollatorSelection: pallet_collator_selection = 21,
         {% endif -%}
-        {% if config.pallet_session -%}
+        {% if config.pallet_session is defined -%}
         Session: pallet_session = 22,
         {% endif -%}
-        {% if config.pallet_aura -%}
+        {% if config.pallet_aura is defined -%}
         Aura: pallet_aura = 23,
         {% endif -%}
-        {% if config.cumulus_pallet_aura_ext -%}
+        {% if config.cumulus_pallet_aura_ext is defined -%}
         AuraExt: cumulus_pallet_aura_ext = 24,
         {% endif -%}
 
-        {% if config.cumulus_pallet_xcmp_queue -%}
+        {% if config.cumulus_pallet_xcmp_queue is defined -%}
         // XCM helpers.
         XcmpQueue: cumulus_pallet_xcmp_queue = 30,
         {% endif -%}
-        {% if config.pallet_xcm -%}
+        {% if config.pallet_xcm is defined -%}
         PolkadotXcm: pallet_xcm = 31,
         {% endif -%}
-        {% if config.cumulus_pallet_xcm -%}
+        {% if config.cumulus_pallet_xcm is defined -%}
         CumulusXcm: cumulus_pallet_xcm = 32,
         {% endif -%}
-        {% if config.pallet_message_queue -%}
+        {% if config.pallet_message_queue is defined -%}
         MessageQueue: pallet_message_queue = 33,
         {% endif -%}
 
         //Frontier
-        {% if config.pallet_evm_chain_id -%}
+        {% if config.pallet_evm_chain_id is defined -%}
         EVMChainId: pallet_evm_chain_id = 40,
         {% endif -%}
-        {% if config.pallet_evm -%}
+        {% if config.pallet_evm is defined -%}
         EVM: pallet_evm = 41,
         {% endif -%}
-        {% if config.pallet_ethereum -%}
+        {% if config.pallet_ethereum is defined -%}
         Ethereum: pallet_ethereum = 42,
         {% endif -%}
-        {% if config.pallet_base_fee -%}
+        {% if config.pallet_base_fee is defined -%}
         BaseFee: pallet_base_fee = 43,
         {% endif -%}
-        {% if config.pallet_dynamic_fee -%}
+        {% if config.pallet_dynamic_fee is defined -%}
         DynamicFee: pallet_dynamic_fee = 44,
         {% endif -%}
-        {% if config.pallet_hotfix_sufficients -%}
+        {% if config.pallet_hotfix_sufficients is defined -%}
         HotfixSufficients: pallet_hotfix_sufficients = 45,
         {% endif -%}
 
         //Magnet
-        {% if config.pallet_on_demand -%}
+        {% if config.pallet_on_demand is defined -%}
         // OrderPallet: pallet_on_demand = 51,
         {% endif -%}
-        {% if config.pallet_evm_utils -%}
+        {% if config.pallet_evm_utils is defined -%}
         EVMUtils: pallet_evm_utils = 60,
         {% endif -%}
-        {% if config.pallet_pot -%}
+        {% if config.pallet_pot is defined -%}
         Pot: pallet_pot = 61,
         {% endif -%}
-        {% if config.pallet_assurance -%}
+        {% if config.pallet_assurance is defined -%}
         Assurance: pallet_assurance = 62,
         {% endif -%}
-        {% if config.pallet_liquidation -%}
+        {% if config.pallet_liquidation is defined -%}
         Liquidation: pallet_liquidation = 63,
         {% endif -%}
-        {% if config.pallet_bulk -%}
+        {% if config.pallet_bulk is defined -%}
         BulkPallet: pallet_bulk = 64,
         {% endif -%}
         //Contracts
-        {% if config.pallet_insecure_randomness_collective_flip -%}
+        {% if config.pallet_insecure_randomness_collective_flip is defined -%}
         RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip = 70,
         {% endif -%}
-        {% if config.pallet_contracts -%}
+        {% if config.pallet_contracts is defined -%}
         Contracts: pallet_contracts = 71,
         {% endif %}
 
         //Move-vm
-        {% if config.pallet_move -%}
+        {% if config.pallet_move is defined -%}
         MoveModule: pallet_move = 80,
         {% endif -%}
 
         //call util
-        {% if config.pallet_multisig -%}
+        {% if config.pallet_multisig is defined -%}
         Multisig: pallet_multisig = 90,
         {% endif -%}
-        {% if config.pallet_proxy -%}
+        {% if config.pallet_proxy is defined -%}
         Proxy: pallet_proxy = 91,
         {%- endif %}
     }
@@ -1659,7 +1659,7 @@ impl_runtime_apis! {
 		}
 	}
 
-{% if config.pallet_evm %}
+{% if config.pallet_evm is defined %}
 	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
 			<Runtime as pallet_evm::Config>::ChainId::get()
@@ -1913,7 +1913,7 @@ impl_runtime_apis! {
 			ConsensusHook::can_build_upon(included_hash, slot)
 		}
 	}
-{%- if config.pallet_on_demand %}
+{%- if config.pallet_on_demand is defined %}
 	impl mp_coretime_on_demand::OrderRuntimeApi<Block, Balance> for Runtime {
 
 		fn slot_width()-> u32{
@@ -1928,7 +1928,7 @@ impl_runtime_apis! {
 		}
 	}
 {% endif -%}
-{%- if config.pallet_bulk -%}
+{%- if config.pallet_bulk is defined -%}
 	impl mp_coretime_bulk::BulkRuntimeApi<Block> for Runtime {
 
 		fn rpc_url()-> Vec<u8>{
@@ -1941,7 +1941,7 @@ impl_runtime_apis! {
 	}
 {% endif -%}
 
-{%- if config.pallet_pot %}
+{%- if config.pallet_pot is defined %}
 	impl mp_system::OnRelayChainApi<Block> for Runtime {
 		fn on_relaychain(block_number: u32) -> bool {
 			Assurance::on_relaychain(block_number)
@@ -1958,7 +1958,7 @@ impl_runtime_apis! {
 	}
 {% endif -%}
 
-{%- if config.pallet_contracts %}
+{%- if config.pallet_contracts is defined %}
 	impl pallet_contracts::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash, EventRecord>
 		for Runtime
 	{
@@ -2027,7 +2027,7 @@ impl_runtime_apis! {
 	}
 {% endif -%}
 
-{%- if config.pallet_move %}
+{%- if config.pallet_move is defined %}
 	impl pallet_move::api::MoveApi<Block, AccountId> for Runtime {
 		fn estimate_gas_publish_module(account: AccountId, bytecode: Vec<u8>) -> Result<MoveApiEstimation, DispatchError> {
 			MoveModule::rpc_estimate_gas_publish_module(&account, bytecode)

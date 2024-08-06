@@ -69,15 +69,15 @@ where
 	C::Api: sp_block_builder::BlockBuilder<Block>,
 	C::Api: sp_consensus_aura::AuraApi<Block, AuraId>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-    {% if config.pallet_transaction_payment.rpc_mod -%}
+    {% if  config.pallet_transaction_payment is defined and config.pallet_transaction_payment.rpc_mod -%}
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
     {% endif -%}
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
-	{% if config.pallet_pot.rpc_mod -%}
+	{% if config.pallet_pot is defined and config.pallet_pot.rpc_mod -%}
 	C::Api: pallet_pot_rpc::PotRPCApi<Block>,
 	{% endif -%}
-	{% if config.pallet_move.rpc_mod -%}
+	{% if config.pallet_move is defined and config.pallet_move.rpc_mod -%}
 	C::Api: pallet_move_rpc::MoveRuntimeApi<Block, AccountId>,
 	{% endif -%}
 	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
@@ -88,10 +88,10 @@ where
 	CIDP: CreateInherentDataProviders<Block, ()> + Send + 'static,
 	CT: fp_rpc::ConvertTransaction<<Block as BlockT>::Extrinsic> + Send + Sync + 'static,
 {
-    {% if config.pallet_move.rpc_mod -%}
+    {% if config.pallet_move is defined and config.pallet_move.rpc_mod -%}
 	use pallet_move_rpc::{MoveApiServer, MovePallet};
 	{% endif -%}
-	{% if config.pallet_transaction_payment.rpc_mod -%}
+	{% if config.pallet_transaction_payment is defined and config.pallet_transaction_payment.rpc_mod -%}
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	{% endif -%}
 	use sc_consensus_manual_seal::rpc::{ManualSeal, ManualSealApiServer};
@@ -101,13 +101,13 @@ where
 	let FullDeps { client, pool, deny_unsafe, command_sink, eth } = deps;
 
 	io.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
-	{% if config.pallet_transaction_payment.rpc_mod -%}
+	{% if config.pallet_transaction_payment is defined and config.pallet_transaction_payment.rpc_mod -%}
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 	{% endif -%}
-	{% if config.pallet_pot.rpc_mod -%}
+	{% if config.pallet_pot is defined and config.pallet_pot.rpc_mod -%}
 	io.merge(pallet_pot_rpc::Pot::new(client.clone()).into_rpc())?;
 	{% endif -%}
-	{% if config.pallet_move.rpc_mod -%}
+	{% if config.pallet_move is defined and config.pallet_move.rpc_mod -%}
 	io.merge(MovePallet::new(client.clone()).into_rpc())?;
 	{% endif %}
 
