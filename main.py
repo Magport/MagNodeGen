@@ -1,7 +1,7 @@
 import json
 import subprocess
 from jinja2 import Environment, FileSystemLoader
-from flask import Flask, request, jsonify, abort, send_file
+from flask import Flask, request, jsonify, send_file
 import uuid
 import hmac
 import hashlib
@@ -48,10 +48,10 @@ def authenticate(func):
         timestamp = request.headers.get('x-timestamp')
 
         if not api_key or not signature or not timestamp:
-            abort(401, description="Unauthorized: Missing API key, signature, or timestamp")
+            return jsonify({"success": False, "taskId": None, "message": "Unauthorized: Missing API key, signature, or timestamp"}), 401
 
         if api_key not in api_keys:
-            abort(401, description="Unauthorized: Invalid API key")
+            return jsonify({"success": False, "taskId": None, "message": "Unauthorized: Invalid API key"}), 401
 
         secret = api_keys[api_key]['secret']
         method = request.method
@@ -60,7 +60,7 @@ def authenticate(func):
         expected_signature = create_signature(secret, method, path, timestamp, body)
 
         if not hmac.compare_digest(expected_signature, signature):
-            abort(401, description="Unauthorized: Invalid signature")
+            return jsonify({"success": False, "taskId": None, "message": "Unauthorized: Invalid signature"}), 401
 
         return func(*args, **kwargs)
     return wrapper
@@ -71,10 +71,10 @@ def generate_key():
     new_secret = generate_secret()
     username = request.json.get('username')
     if not username:
-        abort(400, description="Bad Request: Missing username")
+        return jsonify({"success": False, "taskId": None, "message": "Bad Request: Missing username"}), 400
     api_keys[new_key] = {'username': username, 'secret': new_secret}
     save_api_keys()
-    return jsonify({"api_key": new_key, "secret": new_secret})
+    return jsonify({"success": True, "taskId": None, "message": "", "data": {"api_key": new_key, "secret": new_secret}})
 
 @app.route('/generate-code', methods=['POST'])
 @authenticate
@@ -84,7 +84,7 @@ def generate_code_endpoint():
     config = data.get('config')
 
     if not config or not task_id:
-        abort(400, description="Bad Request: Missing config or taskId")
+        return jsonify({"success": False, "taskId": None, "message": "Bad Request: Missing config or taskId"}), 400
 
     task_dir = os.path.join('tasks', task_id)
     os.makedirs(task_dir, exist_ok=True)
@@ -97,16 +97,16 @@ def generate_code_endpoint():
     branch = 'features/genTemplate'
     dest_dir = os.path.join(task_dir, 'Magnet')
 
-    clone_repo(repo_url, branch, dest_dir)
-    generate_code(config_path, 'template/runtime_lib.template', os.path.join(dest_dir, 'runtime/src/lib.rs'))
-    generate_code(config_path, 'template/chain_spec.template', os.path.join(dest_dir, 'node/src/chain_spec.rs'))
-    generate_code(config_path, 'template/rpc_mod.template', os.path.join(dest_dir, 'node/src/rpc/mod.rs'))
-
-    zip_file_path = shutil.make_archive(task_dir, 'zip', task_dir)
-
-    tasks[task_id] = {'status': 'completed', 'path': zip_file_path}
-    print(f'Task {task_id} completed, zip file path: {tasks[task_id]["path"]}')
-    return jsonify({'status': 'Task started', 'taskId': task_id})
+    try:
+        clone_repo(repo_url, branch, dest_dir)
+        generate_code(config_path, 'template/runtime_lib.template', os.path.join(dest_dir, 'runtime/src/lib.rs'))
+        generate_code(config_path, 'template/chain_spec.template', os.path.join(dest_dir, 'node/src/chain_spec.rs'))
+        generate_code(config_path, 'template/rpc_mod.template', os.path.join(dest_dir, 'node/src/rpc/mod.rs'))
+        zip_file_path = shutil.make_archive(task_dir, 'zip', task_dir)
+        tasks[task_id] = {'status': 'completed', 'path': zip_file_path}
+        return jsonify({"success": True, "taskId": task_id, "message": ""})
+    except Exception as e:
+        return jsonify({"success": False, "taskId": task_id, "message": str(e)}), 500
 
 @app.route('/task-status/<task_id>', methods=['GET'])
 @authenticate
@@ -115,7 +115,7 @@ def task_status(task_id):
     task = tasks.get(task_id)
     if not task:
         print(f'Task {task_id} not found in tasks')
-        abort(404, description="Not Found: Invalid taskId")
+        return jsonify({"success": False, "taskId": task_id, "message": "Not Found: Invalid taskId"}), 404
 
     if task['status'] == 'completed':
         zip_file_path = task['path']
@@ -124,9 +124,9 @@ def task_status(task_id):
             return send_file(zip_file_path, as_attachment=True)
         else:
             print(f'ZIP file {zip_file_path} not found')
-            abort(500, description="Internal Server Error: ZIP file not found")
+            return jsonify({"success": False, "taskId": task_id, "message": "Internal Server Error: ZIP file not found"}), 500
 
-    return jsonify(task)
+    return jsonify({"success": True, "taskId": task_id, "message": "Task is still in progress"})
 
 def clone_repo(repo_url, branch, dest_dir):
     try:
