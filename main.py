@@ -14,6 +14,8 @@ import shutil
 app = Flask(__name__)
 
 API_KEYS_FILE = 'api_keys.json'
+TASKS_FILE = 'tasks.json'
+TASK_RETENTION_SECONDS = 7 * 24 * 60 * 60
 
 api_keys = {}
 tasks = {}
@@ -29,6 +31,31 @@ def load_api_keys():
             api_keys = json.load(f)
     else:
         api_keys = {}
+
+def save_tasks():
+    with open(TASKS_FILE, 'w') as f:
+        json.dump(tasks, f)
+
+def load_tasks():
+    global tasks
+    if os.path.exists(TASKS_FILE):
+        with open(TASKS_FILE, 'r') as f:
+            tasks = json.load(f)
+    else:
+        tasks = {}
+
+def clean_old_tasks():
+    current_time = time.time()
+    expired_tasks = []
+    for task_id, task_info in tasks.items():
+        if current_time - task_info['timestamp'] > TASK_RETENTION_SECONDS:
+            expired_tasks.append(task_id)
+            shutil.rmtree(os.path.dirname(task_info['path']), ignore_errors=True)
+
+    for task_id in expired_tasks:
+        del tasks[task_id]
+
+    save_tasks()
 
 def generate_api_key():
     return str(uuid.uuid4())
@@ -102,9 +129,22 @@ def generate_code_endpoint():
         generate_code(config_path, 'template/runtime_lib.template', os.path.join(dest_dir, 'runtime/src/lib.rs'))
         generate_code(config_path, 'template/chain_spec.template', os.path.join(dest_dir, 'node/src/chain_spec.rs'))
         generate_code(config_path, 'template/rpc_mod.template', os.path.join(dest_dir, 'node/src/rpc/mod.rs'))
+
+        subprocess.run(['cargo', '+stable', 'fmt', '--all'], cwd=dest_dir, check=True)
+
         zip_file_path = shutil.make_archive(task_dir, 'zip', task_dir)
-        tasks[task_id] = {'status': 'completed', 'path': zip_file_path}
-        return jsonify({"success": True, "taskId": task_id, "message": ""})
+        print(f'zip file path: {zip_file_path}')
+
+        md5_hash = hashlib.md5()
+        with open(zip_file_path, 'rb') as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                md5_hash.update(byte_block)
+        zip_md5 = md5_hash.hexdigest()
+
+        tasks[task_id] = {'status': 'completed', 'path': zip_file_path, 'timestamp': time.time(), 'md5': zip_md5}
+        save_tasks()
+
+        return jsonify({"success": True, "taskId": task_id, "message": "", "md5": zip_md5})
     except Exception as e:
         return jsonify({"success": False, "taskId": task_id, "message": str(e)}), 500
 
@@ -147,4 +187,6 @@ def generate_code(json_file, template_file, output_file):
 
 if __name__ == "__main__":
     load_api_keys()
+    load_tasks()
+    clean_old_tasks()
     app.run(host='0.0.0.0', port=5000, debug=True)
