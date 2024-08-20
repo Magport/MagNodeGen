@@ -13,6 +13,7 @@ pub mod xcms;
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use core::ops::Div;
+use pallet_evm::AddressMapping;
 
 use cumulus_pallet_parachain_system::RelayNumberMonotonicallyIncreases;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
@@ -344,14 +345,56 @@ impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConve
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("{{ config.pallet_frame_system.parameter.RuntimeVersion.spec_name }}"),
-	impl_name: create_runtime_str!("{{ config.pallet_frame_system.parameter.RuntimeVersion.impl_name }}"),
-	authoring_version: {{ config.pallet_frame_system.parameter.RuntimeVersion.authoring_version }},
-	spec_version: {{ config.pallet_frame_system.parameter.RuntimeVersion.spec_version }},
-	impl_version: {{ config.pallet_frame_system.parameter.RuntimeVersion.impl_version }},
-	apis: {{ config.pallet_frame_system.parameter.RuntimeVersion.apis }},
-	transaction_version: {{ config.pallet_frame_system.parameter.RuntimeVersion.transaction_version }},
-	state_version: {{ config.pallet_frame_system.parameter.RuntimeVersion.state_version }},
+    spec_name: create_runtime_str!(
+        {% if config.pallet_frame_system.parameter.RuntimeVersion.spec_name is defined %}
+            "{{ config.pallet_frame_system.parameter.RuntimeVersion.spec_name }}"
+        {% else %}
+            "magnet-parachain"
+        {% endif %}
+    ),
+    impl_name: create_runtime_str!(
+        {% if config.pallet_frame_system.parameter.RuntimeVersion.impl_name is defined %}
+            "{{ config.pallet_frame_system.parameter.RuntimeVersion.impl_name }}"
+        {% else %}
+            "magnet-parachain"
+        {% endif %}
+    ),
+    authoring_version:
+        {% if config.pallet_frame_system.parameter.RuntimeVersion.authoring_version is defined %}
+            {{ config.pallet_frame_system.parameter.RuntimeVersion.authoring_version }}
+        {% else %}
+            1
+        {% endif %},
+    spec_version:
+        {% if config.pallet_frame_system.parameter.RuntimeVersion.spec_version is defined %}
+            {{ config.pallet_frame_system.parameter.RuntimeVersion.spec_version }}
+        {% else %}
+            1
+        {% endif %},
+    impl_version:
+        {% if config.pallet_frame_system.parameter.RuntimeVersion.impl_version is defined %}
+            {{ config.pallet_frame_system.parameter.RuntimeVersion.impl_version }}
+        {% else %}
+            0
+        {% endif %},
+    apis:
+        {% if config.pallet_frame_system.parameter.RuntimeVersion.apis is defined %}
+            {{ config.pallet_frame_system.parameter.RuntimeVersion.apis }}
+        {% else %}
+            "RUNTIME_API_VERSIONS"
+        {% endif %},
+    transaction_version:
+        {% if config.pallet_frame_system.parameter.RuntimeVersion.transaction_version is defined %}
+            {{ config.pallet_frame_system.parameter.RuntimeVersion.transaction_version }}
+        {% else %}
+            1
+        {% endif %},
+    state_version:
+        {% if config.pallet_frame_system.parameter.RuntimeVersion.state_version is defined %}
+            {{ config.pallet_frame_system.parameter.RuntimeVersion.state_version }}
+        {% else %}
+            1
+        {% endif %},
 };
 
 /// This determines the average expected block time that we are targeting.
@@ -382,7 +425,7 @@ pub const GRAND: Balance = QUID * 1_000;
 pub const MILLICENTS: Balance = CENTS / 1_000;
 
 /// The existential deposit. Set to 1/10 of the Connected Relay Chain.
-pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
+pub const EXISTENTIAL_DEPOSIT: Balance = 1;
 
 /// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
 /// used to limit the maximal weight of a single extrinsic.
@@ -524,11 +567,22 @@ impl pallet_authorship::Config for Runtime {
 
 {%- if config.pallet_balances is defined %}
 parameter_types! {
-	pub const ExistentialDeposit: Balance = {{config.pallet_balances.parameter.ExistentialDeposit}};
+    pub const ExistentialDeposit: Balance =
+        {%- if config.pallet_balances.parameter.ExistentialDeposit is defined %}
+            {{ config.pallet_balances.parameter.ExistentialDeposit }}
+        {% else %}
+            EXISTENTIAL_DEPOSIT
+        {% endif -%};
 }
 
 impl pallet_balances::Config for Runtime {
-	type MaxLocks = ConstU32<{{config.pallet_balances.parameter.MaxLocks}}>;
+    type MaxLocks = ConstU32<
+        {% if config.pallet_balances.parameter.MaxLocks is defined %}
+            {{ config.pallet_balances.parameter.MaxLocks }}
+        {% else %}
+            50
+        {% endif %}
+    >;
 	/// The type for recording an account's balance.
 	type Balance = Balance;
 	/// The ubiquitous event type.
@@ -537,12 +591,24 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
-	type MaxReserves = ConstU32<{{config.pallet_balances.parameter.MaxReserves}}>;
+    type MaxReserves = ConstU32<
+        {% if config.pallet_balances.parameter.MaxReserves is defined %}
+            {{ config.pallet_balances.parameter.MaxReserves }}
+        {% else %}
+            50
+        {% endif %}
+    >;
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeHoldReason = RuntimeHoldReason;
 	type RuntimeFreezeReason = RuntimeFreezeReason;
 	type FreezeIdentifier = ();
-	type MaxFreezes = ConstU32<{{config.pallet_balances.parameter.MaxFreezes}}>;
+    type MaxFreezes = ConstU32<
+        {% if config.pallet_balances.parameter.MaxFreezes is defined %}
+            {{ config.pallet_balances.parameter.MaxFreezes }}
+        {% else %}
+            1
+        {% endif %}
+    >;
 }
 {% endif -%}
 
@@ -584,7 +650,12 @@ where
 {%- if config.pallet_transaction_payment is defined %}
 parameter_types! {
 	/// Relay Chain `TransactionByteFee` / 10
-	pub const TransactionByteFee: Balance = {{config.pallet_transaction_payment.parameter.TransactionByteFee}} * MICROUNIT;
+    pub const TransactionByteFee: Balance =
+        {%- if config.pallet_transaction_payment.parameter.TransactionByteFee is defined %}
+            {{ config.pallet_transaction_payment.parameter.TransactionByteFee }} * MICROUNIT
+        {% else %}
+            10 * MICROUNIT
+        {% endif -%};
 }
 
 impl pallet_transaction_payment::Config for Runtime {
@@ -594,7 +665,13 @@ impl pallet_transaction_payment::Config for Runtime {
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
-	type OperationalFeeMultiplier = ConstU8<{{config.pallet_transaction_payment.parameter.OperationalFeeMultiplier}}>;
+    type OperationalFeeMultiplier = ConstU8<
+        {% if config.pallet_transaction_payment.parameter.OperationalFeeMultiplier is defined %}
+            {{ config.pallet_transaction_payment.parameter.OperationalFeeMultiplier }}
+        {% else %}
+            5
+        {% endif %}
+    >;
 }
 {% endif -%}
 
@@ -608,9 +685,24 @@ impl pallet_sudo::Config for Runtime {
 
 {%- if config.cumulus_pallet_parachain_system is defined %}
 parameter_types! {
-	pub const ReservedXcmpWeight: Weight = {{config.cumulus_pallet_parachain_system.parameter.ReservedXcmpWeight}};
-	pub const ReservedDmpWeight: Weight = {{config.cumulus_pallet_parachain_system.parameter.ReservedDmpWeight}};
-	pub const RelayOrigin: AggregateMessageOrigin = {{config.cumulus_pallet_parachain_system.parameter.RelayOrigin}};
+	pub const ReservedXcmpWeight: Weight =
+        {%- if config.cumulus_pallet_parachain_system.parameter.ReservedXcmpWeight is defined %}
+            {{ config.cumulus_pallet_parachain_system.parameter.ReservedXcmpWeight }}
+        {% else %}
+            MAXIMUM_BLOCK_WEIGHT.saturating_div(4)
+        {% endif -%};
+	pub const ReservedDmpWeight: Weight =
+        {%- if config.cumulus_pallet_parachain_system.parameter.ReservedDmpWeight is defined %}
+            {{ config.cumulus_pallet_parachain_system.parameter.ReservedDmpWeight }}
+        {% else %}
+            MAXIMUM_BLOCK_WEIGHT.saturating_div(4)
+        {% endif -%};
+	pub const RelayOrigin: AggregateMessageOrigin =
+        {%- if config.cumulus_pallet_parachain_system.parameter.RelayOrigin is defined %}
+            {{ config.cumulus_pallet_parachain_system.parameter.RelayOrigin }}
+        {% else %}
+            AggregateMessageOrigin::Parent
+        {% endif -%};
 }
 
 type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
@@ -641,7 +733,14 @@ impl parachain_info::Config for Runtime {}
 
 {%- if config.pallet_message_queue is defined %}
 parameter_types! {
-	pub MessageQueueServiceWeight: Weight = Perbill::from_percent({{ config.pallet_message_queue.parameter.MessageQueueServiceWeight }}) * RuntimeBlockWeights::get().max_block;
+    pub MessageQueueServiceWeight: Weight =
+        Perbill::from_percent(
+            {%- if config.pallet_message_queue.parameter.MessageQueueServiceWeight is defined %}
+                {{ config.pallet_message_queue.parameter.MessageQueueServiceWeight }}
+            {% else %}
+                35
+            {% endif -%}
+        ) * RuntimeBlockWeights::get().max_block;
 }
 
 impl pallet_message_queue::Config for Runtime {
@@ -661,8 +760,20 @@ impl pallet_message_queue::Config for Runtime {
 	// The XCMP queue pallet is only ever able to handle the `Sibling(ParaId)` origin:
 	type QueueChangeHandler = NarrowOriginToSibling<XcmpQueue>;
 	type QueuePausedQuery = NarrowOriginToSibling<XcmpQueue>;
-	type HeapSize = sp_core::ConstU32<{ {{ config.pallet_message_queue.parameter.HeapSize }} }>;
-	type MaxStale = sp_core::ConstU32<{{ config.pallet_message_queue.parameter.MaxStale }}>;
+    type HeapSize = sp_core::ConstU32<{
+        {%- if config.pallet_message_queue.parameter.HeapSize is defined %}
+            {{ config.pallet_message_queue.parameter.HeapSize }}
+        {% else %}
+            64 * 1024
+        {% endif -%}
+    }>;
+    type MaxStale = sp_core::ConstU32<
+        {%- if config.pallet_message_queue.parameter.MaxStale is defined %}
+            {{ config.pallet_message_queue.parameter.MaxStale }}
+        {% else %}
+            8
+        {% endif -%}
+    >;
 	type ServiceWeight = MessageQueueServiceWeight;
 }
 {% endif -%}
@@ -676,7 +787,13 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	// Enqueue XCMP messages from siblings for later processing.
 	type XcmpQueue = TransformOrigin<MessageQueue, AggregateMessageOrigin, ParaId, ParaIdToSibling>;
-	type MaxInboundSuspended = sp_core::ConstU32<{{ config.cumulus_pallet_xcmp_queue.parameter.MaxInboundSuspended }}>;
+	type MaxInboundSuspended = sp_core::ConstU32<
+        {%- if config.cumulus_pallet_xcmp_queue.parameter.MaxInboundSuspended is defined %}
+            {{ config.cumulus_pallet_xcmp_queue.parameter.MaxInboundSuspended }}
+        {% else %}
+            1_000
+        {% endif -%}
+    >;
 	type ChannelInfo = ParachainSystem;
 	type VersionWrapper = ();
 	type ControllerOrigin = EnsureRoot<AccountId>;
@@ -688,8 +805,18 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 
 {%- if config.pallet_session is defined %}
 parameter_types! {
-	pub const Period: u32 = {{ config.pallet_session.parameter.Period }};
-	pub const Offset: u32 = {{ config.pallet_session.parameter.Offset }};
+    pub const Period: u32 =
+        {%- if config.pallet_session.parameter.Period is defined %}
+            {{ config.pallet_session.parameter.Period }}
+        {% else %}
+            6 * HOURS
+        {% endif -%};
+    pub const Offset: u32 =
+        {%- if config.pallet_session.parameter.Offset is defined %}
+            {{ config.pallet_session.parameter.Offset }}
+        {% else %}
+            0
+        {% endif -%};
 }
 
 impl pallet_session::Config for Runtime {
@@ -711,8 +838,20 @@ impl pallet_session::Config for Runtime {
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
-	type MaxAuthorities = ConstU32<{{ config.pallet_aura.parameter.MaxAuthorities }}>;
-	type AllowMultipleBlocksPerSlot = ConstBool<{{ config.pallet_aura.parameter.AllowMultipleBlocksPerSlot }}>;
+    type MaxAuthorities = ConstU32<
+        {%- if config.pallet_aura.parameter.MaxAuthorities is defined %}
+            {{ config.pallet_aura.parameter.MaxAuthorities }}
+        {% else %}
+            100_000
+        {% endif -%}
+    >;
+    type AllowMultipleBlocksPerSlot = ConstBool<
+        {%- if config.pallet_aura.parameter.AllowMultipleBlocksPerSlot is defined %}
+            {{ config.pallet_aura.parameter.AllowMultipleBlocksPerSlot }}
+        {% else %}
+            false
+        {% endif -%}
+    >;
 	#[cfg(feature = "experimental")]
 	type SlotDuration = ConstU64<SLOT_DURATION>;
 }
@@ -720,10 +859,28 @@ impl pallet_aura::Config for Runtime {
 
 {%- if config.pallet_collator_selection is defined %}
 parameter_types! {
-	pub const PotId: PalletId = PalletId(*b"{{ config.pallet_collator_selection.parameter.PotId }}");
-	pub const SessionLength: BlockNumber = {{ config.pallet_collator_selection.parameter.SessionLength }};
+	//pub const PotId: PalletId = PalletId(*b"{{ config.pallet_collator_selection.parameter.PotId }}");
+    pub const PotId: PalletId = PalletId(*b"
+        {%- if config.pallet_collator_selection.parameter.PotId is defined %}
+            {{ config.pallet_collator_selection.parameter.PotId }}
+        {% else %}
+            PotStake
+        {% endif -%}
+    ");
+
+    pub const SessionLength: BlockNumber =
+        {%- if config.pallet_collator_selection.parameter.SessionLength is defined %}
+            {{ config.pallet_collator_selection.parameter.SessionLength }}
+        {% else %}
+            6 * HOURS
+        {% endif -%};
 	// StakingAdmin pluralistic body.
-	pub const StakingAdminBodyId: BodyId = {{ config.pallet_collator_selection.parameter.StakingAdminBodyId }};
+    pub const StakingAdminBodyId: BodyId =
+        {%- if config.pallet_collator_selection.parameter.StakingAdminBodyId is defined %}
+            {{ config.pallet_collator_selection.parameter.StakingAdminBodyId }}
+        {% else %}
+            BodyId::Defense
+        {% endif -%};
 }
 
 /// We allow root and the StakingAdmin to execute privileged collator selection operations.
@@ -737,9 +894,27 @@ impl pallet_collator_selection::Config for Runtime {
 	type Currency = Balances;
 	type UpdateOrigin = CollatorSelectionUpdateOrigin;
 	type PotId = PotId;
-	type MaxCandidates = ConstU32<{{ config.pallet_collator_selection.parameter.MaxCandidates }}>;
-	type MinEligibleCollators = ConstU32<{{ config.pallet_collator_selection.parameter.MinEligibleCollators }}>;
-	type MaxInvulnerables = ConstU32<{{ config.pallet_collator_selection.parameter.MaxInvulnerables }}>;
+    type MaxCandidates = ConstU32<
+        {%- if config.pallet_collator_selection.parameter.MaxCandidates is defined %}
+            {{ config.pallet_collator_selection.parameter.MaxCandidates }}
+        {% else %}
+            100
+        {% endif -%}
+    >;
+    type MinEligibleCollators = ConstU32<
+        {%- if config.pallet_collator_selection.parameter.MinEligibleCollators is defined %}
+            {{ config.pallet_collator_selection.parameter.MinEligibleCollators }}
+        {% else %}
+            4
+        {% endif -%}
+    >;
+    type MaxInvulnerables = ConstU32<
+        {%- if config.pallet_collator_selection.parameter.MaxInvulnerables is defined %}
+            {{ config.pallet_collator_selection.parameter.MaxInvulnerables }}
+        {% else %}
+            20
+        {% endif -%}
+    >;
 	// should be a multiple of session or things will get inconsistent
 	type KickThreshold = Period;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
@@ -820,7 +995,12 @@ where
 }
 
 parameter_types! {
-	pub const MaxUrlLength: u32 = {{ config.pallet_bulk.parameter.MaxUrlLength }};
+    pub const MaxUrlLength: u32 =
+        {%- if config.pallet_bulk.parameter.MaxUrlLength is defined %}
+            {{ config.pallet_bulk.parameter.MaxUrlLength }}
+        {% else %}
+            300
+        {% endif -%};
 }
 
 impl pallet_bulk::Config for Runtime {
@@ -835,10 +1015,32 @@ impl pallet_bulk::Config for Runtime {
 
 {%- if config.pallet_collective is defined %}
 parameter_types! {
-	pub const CouncilMotionDuration: BlockNumber = {{ config.pallet_collective.parameter.CouncilMotionDuration }};
-	pub const CouncilMaxProposals: u32 = {{ config.pallet_collective.parameter.CouncilMaxProposals }};
-	pub const CouncilMaxMembers: u32 = {{ config.pallet_collective.parameter.CouncilMaxMembers }};
-	pub MaxCollectivesProposalWeight : Weight = Perbill::from_percent({{ config.pallet_collective.parameter.MaxCollectivesProposalWeight }}) * RuntimeBlockWeights::get().max_block;
+	pub const CouncilMotionDuration: BlockNumber =
+        {%- if config.pallet_collective.parameter.CouncilMotionDuration is defined %}
+            {{ config.pallet_collective.parameter.CouncilMotionDuration }}
+        {% else %}
+            7 * DAYS
+        {% endif -%};
+	pub const CouncilMaxProposals: u32 =
+        {%- if config.pallet_collective.parameter.CouncilMaxProposals is defined %}
+            {{ config.pallet_collective.parameter.CouncilMaxProposals }}
+        {% else %}
+            10
+        {% endif -%};
+	pub const CouncilMaxMembers: u32 =
+        {%- if config.pallet_collective.parameter.CouncilMaxMembers is defined %}
+            {{ config.pallet_collective.parameter.CouncilMaxMembers }}
+        {% else %}
+            25
+        {% endif -%};
+	pub MaxCollectivesProposalWeight : Weight =
+        Perbill::from_percent(
+            {%- if config.pallet_collective.parameter.MaxCollectivesProposalWeight is defined %}
+                {{ config.pallet_collective.parameter.MaxCollectivesProposalWeight }}
+            {% else %}
+                50
+            {% endif -%}
+        ) * RuntimeBlockWeights::get().max_block;
 }
 
 type CouncilCollective = pallet_collective::Instance1;
@@ -876,15 +1078,30 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 	}
 }
 
-const BLOCK_GAS_LIMIT: u64 = {{ config.pallet_evm.parameter.BlockGasLimit }};
-const MAX_POV_SIZE: u64 = {{ config.pallet_evm.parameter.MaxPovSize }};
+const BLOCK_GAS_LIMIT: u64 =
+{%- if config.pallet_evm.parameter.BlockGasLimit is defined %}
+    {{ config.pallet_evm.parameter.BlockGasLimit }};
+{% else %}
+    75_000_000;
+{% endif -%}
+const MAX_POV_SIZE: u64 =
+{%- if config.pallet_evm.parameter.MaxPovSize is defined %}
+    {{ config.pallet_evm.parameter.MaxPovSize }};
+{% else %}
+    5 * 1024 * 1024;
+{% endif -%}
 
 parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
 	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK), 0);
-	pub SuicideQuickClearLimit: u32 = {{ config.pallet_evm.parameter.SuicideQuickClearLimit }};
+	pub SuicideQuickClearLimit: u32 =
+	{%- if config.pallet_evm.parameter.SuicideQuickClearLimit is defined %}
+	    {{ config.pallet_evm.parameter.SuicideQuickClearLimit }};
+	{% else %}
+	    0;
+	{% endif -%}
 }
 
 impl pallet_evm::Config for Runtime {
@@ -914,20 +1131,37 @@ impl pallet_evm::Config for Runtime {
 
 {%- if config.pallet_ethereum is defined %}
 parameter_types! {
-	pub const PostBlockAndTxnHashes: PostLogContent = {{ config.pallet_ethereum.parameter.PostBlockAndTxnHashes }};
+    pub const PostBlockAndTxnHashes: PostLogContent =
+        {%- if config.pallet_ethereum.parameter.PostBlockAndTxnHashes is defined %}
+            {{ config.pallet_ethereum.parameter.PostBlockAndTxnHashes }}
+        {% else %}
+            PostLogContent::BlockAndTxnHashes
+        {% endif -%};
 }
 
 impl pallet_ethereum::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 	type PostLogContent = PostBlockAndTxnHashes;
-	type ExtraDataLength = ConstU32<{{ config.pallet_ethereum.parameter.ExtraDataLength }}>;
+    type ExtraDataLength = ConstU32<
+        {%- if config.pallet_ethereum.parameter.ExtraDataLength is defined %}
+            {{ config.pallet_ethereum.parameter.ExtraDataLength }}
+        {% else %}
+            30
+        {% endif -%}
+    >;
 }
 {% endif -%}
 
 {%- if config.pallet_dynamic_fee is defined %}
 parameter_types! {
-	pub BoundDivision: U256 = U256::from({{ config.pallet_dynamic_fee.parameter.BoundDivision }});
+    pub BoundDivision: U256 = U256::from(
+        {%- if config.pallet_dynamic_fee.parameter.BoundDivision is defined %}
+            {{ config.pallet_dynamic_fee.parameter.BoundDivision }}
+        {% else %}
+            1024
+        {% endif -%}
+    );
 }
 
 impl pallet_dynamic_fee::Config for Runtime {
@@ -937,8 +1171,21 @@ impl pallet_dynamic_fee::Config for Runtime {
 
 {%- if config.pallet_base_fee is defined %}
 parameter_types! {
-	pub DefaultBaseFeePerGas: U256 = U256::from({{ config.pallet_base_fee.parameter.DefaultBaseFeePerGas }});
-	pub DefaultElasticity: Permill = Permill::from_parts({{ config.pallet_base_fee.parameter.DefaultElasticity }});
+	pub DefaultBaseFeePerGas: U256 = U256::from(
+        {%- if config.pallet_base_fee.parameter.DefaultBaseFeePerGas is defined %}
+            {{ config.pallet_base_fee.parameter.DefaultBaseFeePerGas }}
+        {% else %}
+            1_000_000_000
+        {% endif -%}
+    );
+
+	pub DefaultElasticity: Permill = Permill::from_parts(
+        {%- if config.pallet_base_fee.parameter.DefaultElasticity is defined %}
+            {{ config.pallet_base_fee.parameter.DefaultElasticity }}
+        {% else %}
+            125_000
+        {% endif -%}
+    );
 }
 
 pub struct BaseFeeThreshold;
@@ -947,10 +1194,22 @@ impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
 		Permill::zero()
 	}
 	fn ideal() -> Permill {
-		Permill::from_parts({{ config.pallet_base_fee.parameter.Ideal }})
+        Permill::from_parts(
+            {%- if config.pallet_base_fee.parameter.Ideal is defined %}
+                {{ config.pallet_base_fee.parameter.Ideal }}
+            {% else %}
+                500_000
+            {% endif -%}
+        )
 	}
 	fn upper() -> Permill {
-		Permill::from_parts({{ config.pallet_base_fee.parameter.Upper }})
+        Permill::from_parts(
+            {%- if config.pallet_base_fee.parameter.Upper is defined %}
+                {{ config.pallet_base_fee.parameter.Upper }}
+            {% else %}
+                1_000_000
+            {% endif -%}
+        )
 	}
 }
 
@@ -975,15 +1234,50 @@ pub const fn deposit(items: u32, bytes: u32) -> Balance {
 }
 
 parameter_types! {
-	pub const AssetDeposit: Balance = {{ config.pallet_assets.parameter.AssetDeposit }}; // 10 UNITS deposit to create fungible asset class
-	pub const AssetAccountDeposit: Balance = {{ config.pallet_assets.parameter.AssetAccountDeposit }};
-	pub const ApprovalDeposit: Balance = {{ config.pallet_assets.parameter.ApprovalDeposit }};
-	pub const AssetsStringLimit: u32 = {{ config.pallet_assets.parameter.AssetsStringLimit }};
+    pub const AssetDeposit: Balance =
+        {%- if config.pallet_assets.parameter.AssetDeposit is defined %}
+            {{ config.pallet_assets.parameter.AssetDeposit }}
+        {% else %}
+            10 * UNIT
+        {% endif -%}; // 10 UNITS deposit to create fungible asset class
+    pub const AssetAccountDeposit: Balance =
+        {%- if config.pallet_assets.parameter.AssetAccountDeposit is defined %}
+            {{ config.pallet_assets.parameter.AssetAccountDeposit }}
+        {% else %}
+            deposit(1, 16)
+        {% endif -%};
+	pub const ApprovalDeposit: Balance =
+        {%- if config.pallet_assets.parameter.ApprovalDeposit is defined %}
+            {{ config.pallet_assets.parameter.ApprovalDeposit }}
+        {% else %}
+            EXISTENTIAL_DEPOSIT
+        {% endif -%};
+	pub const AssetsStringLimit: u32 =
+        {%- if config.pallet_assets.parameter.AssetsStringLimit is defined %}
+            {{ config.pallet_assets.parameter.AssetsStringLimit }}
+        {% else %}
+            50
+        {% endif -%};
 	/// Key = 32 bytes, Value = 36 bytes (32+1+1+1+1)
 	// https://github.com/paritytech/substrate/blob/069917b/frame/assets/src/lib.rs#L257L271
-	pub const MetadataDepositBase: Balance = {{ config.pallet_assets.parameter.MetadataDepositBase }};
-	pub const MetadataDepositPerByte: Balance = {{ config.pallet_assets.parameter.MetadataDepositPerByte }};
-	pub const ExecutiveBody: BodyId = {{ config.pallet_assets.parameter.ExecutiveBody }};
+	pub const MetadataDepositBase: Balance =
+        {%- if config.pallet_assets.parameter.MetadataDepositBase is defined %}
+            {{ config.pallet_assets.parameter.MetadataDepositBase }}
+        {% else %}
+            deposit(1, 68)
+        {% endif -%};
+	pub const MetadataDepositPerByte: Balance =
+        {%- if config.pallet_assets.parameter.MetadataDepositPerByte is defined %}
+            {{ config.pallet_assets.parameter.MetadataDepositPerByte }}
+        {% else %}
+            deposit(0, 1)
+        {% endif -%};
+	pub const ExecutiveBody: BodyId =
+        {%- if config.pallet_assets.parameter.ExecutiveBody is defined %}
+            {{ config.pallet_assets.parameter.ExecutiveBody }}
+        {% else %}
+            BodyId::Executive
+        {% endif -%};
 }
 
 impl pallet_assets::Config for Runtime {
@@ -991,7 +1285,13 @@ impl pallet_assets::Config for Runtime {
 	type Balance = Balance;
 	//type AssetId = AssetId;
 	type AssetId = u32;
-	type RemoveItemsLimit = ConstU32<{{ config.pallet_assets.parameter.RemoveItemsLimit }}>;
+	type RemoveItemsLimit = ConstU32<
+        {%- if config.pallet_assets.parameter.RemoveItemsLimit is defined %}
+            {{ config.pallet_assets.parameter.RemoveItemsLimit }}
+        {% else %}
+            1000
+        {% endif -%}
+    >;
 	type AssetIdParameter = codec::Compact<u32>;
 	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
 	type Currency = Balances;
@@ -1012,8 +1312,19 @@ impl pallet_assets::Config for Runtime {
 {%- if config.pallet_assets_bridge is defined %}
 parameter_types! {
 	// 0x1111111111111111111111111111111111111111
-	pub EvmCaller: H160 = H160::from_slice(&{{ config.pallet_assets_bridge.parameter.EvmCaller }}[..]);
-	pub ClaimBond: Balance = {{ config.pallet_assets_bridge.parameter.ClaimBond }};
+    pub EvmCaller: H160 = H160::from_slice(&{
+        {%- if config.pallet_assets_bridge.parameter.EvmCaller is defined %}
+            {{ config.pallet_assets_bridge.parameter.EvmCaller }}
+        {% else %}
+            [17u8; 20]
+        {% endif -%}
+    }[..]);
+	pub ClaimBond: Balance =
+        {%- if config.pallet_assets_bridge.parameter.ClaimBond is defined %}
+            {{ config.pallet_assets_bridge.parameter.ClaimBond }}
+        {% else %}
+            10 * EXISTENTIAL_DEPOSIT
+        {% endif -%};
 }
 impl pallet_assets_bridge::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -1047,12 +1358,23 @@ impl pallet_pot::Config for Runtime {
 
 {%- if config.pallet_assurance is defined %}
 parameter_types! {
-	pub const SystemPotName: &'static str = "{{ config.pallet_assurance.parameter.SystemPotName }}";
+	pub const SystemPotName: &'static str =
+	{%- if config.pallet_assurance.parameter.SystemPotName is defined %}
+	    "{{ config.pallet_assurance.parameter.SystemPotName }}";
+	{% else %}
+    	"system";
+    {% endif -%}
 }
 
 impl pallet_assurance::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type DefaultBidThreshold = ConstU32<{{ config.pallet_assurance.parameter.DefaultBidThreshold }}>;
+	type DefaultBidThreshold = ConstU32<
+        {%- if config.pallet_assurance.parameter.DefaultBidThreshold is defined %}
+            {{ config.pallet_assurance.parameter.DefaultBidThreshold }}
+        {% else %}
+            8
+        {% endif -%}
+    >;
 }
 {% endif -%}
 
@@ -1067,15 +1389,60 @@ impl pallet_utility::Config for Runtime {
 
 {%- if config.pallet_liquidation is defined %}
 parameter_types! {
-	pub const SystemRatio: Perbill = Perbill::from_percent({{ config.pallet_liquidation.parameter.SystemRatio }}); // 20% for system
-	pub const TreasuryRatio: Perbill = Perbill::from_percent({{ config.pallet_liquidation.parameter.TreasuryRatio }}); // 33% for treasury
+	pub const SystemRatio: Perbill = Perbill::from_percent(
+        {%- if config.pallet_liquidation.parameter.SystemRatio is defined %}
+            {{ config.pallet_liquidation.parameter.SystemRatio }}
+        {% else %}
+            20
+        {% endif -%}
+    ); // 20% for system
+
+	pub const TreasuryRatio: Perbill = Perbill::from_percent(
+        {%- if config.pallet_liquidation.parameter.TreasuryRatio is defined %}
+            {{ config.pallet_liquidation.parameter.TreasuryRatio }}
+        {% else %}
+            33
+        {% endif -%}
+    ); // 33% for treasury
 	//pub const OperationRatio: Perbill = Perbill::from_percent({{ config.pallet_liquidation.parameter.SystemRatio }}); // 25% for maintenance
-	pub const ProfitDistributionCycle: BlockNumber = {{ config.pallet_liquidation.parameter.ProfitDistributionCycle }};
-	pub const ExistDeposit: Balance = {{ config.pallet_liquidation.parameter.ExistDeposit }};
-	pub const MinLiquidationThreshold: Balance = {{ config.pallet_liquidation.parameter.MinLiquidationThreshold }};
-	pub const SystemAccountName: &'static str = "{{ config.pallet_liquidation.parameter.SystemAccountName }}";
-	pub const TreasuryAccountName: &'static str = "{{ config.pallet_liquidation.parameter.TreasuryAccountName }}";
-	pub const OperationAccountName: &'static str = "{{ config.pallet_liquidation.parameter.OperationAccountName }}";
+	pub const ProfitDistributionCycle: BlockNumber =
+        {%- if config.pallet_liquidation.parameter.ProfitDistributionCycle is defined %}
+            {{ config.pallet_liquidation.parameter.ProfitDistributionCycle }}
+        {% else %}
+            10
+        {% endif -%};
+	pub const ExistDeposit: Balance =
+        {%- if config.pallet_liquidation.parameter.ExistDeposit is defined %}
+            {{ config.pallet_liquidation.parameter.ExistDeposit }}
+        {% else %}
+            EXISTENTIAL_DEPOSIT
+        {% endif -%};
+	pub const MinLiquidationThreshold: Balance =
+        {%- if config.pallet_liquidation.parameter.MinLiquidationThreshold is defined %}
+            {{ config.pallet_liquidation.parameter.MinLiquidationThreshold }}
+        {% else %}
+            MILLIUNIT * 20
+        {% endif -%};
+	pub const SystemAccountName: &'static str =
+	{%- if config.pallet_liquidation.parameter.SystemAccountName is defined %}
+	    "{{ config.pallet_liquidation.parameter.SystemAccountName }}";
+	{% else %}
+	    "system";
+	{% endif -%}
+
+	pub const TreasuryAccountName: &'static str =
+	{%- if config.pallet_liquidation.parameter.TreasuryAccountName is defined %}
+	    "{{ config.pallet_liquidation.parameter.TreasuryAccountName }}";
+	{% else %}
+	    "treasury";
+	{% endif -%}
+
+	pub const OperationAccountName: &'static str =
+	{%- if config.pallet_liquidation.parameter.OperationAccountName is defined %}
+	    "{{ config.pallet_liquidation.parameter.OperationAccountName }}";
+	{% else %}
+	    "maintenance";
+    {% endif -%}
 }
 
 impl pallet_liquidation::Config for Runtime {
@@ -1093,9 +1460,29 @@ impl pallet_liquidation::Config for Runtime {
 
 {%- if config.pallet_preimage is defined %}
 parameter_types! {
-	pub const PreimageBaseDeposit: Balance = {{ config.pallet_preimage.parameter.PreimageBaseDeposit }};
-	pub const PreimageByteDeposit: Balance = {{ config.pallet_preimage.parameter.PreimageByteDeposit }};
-	pub const PreimageHoldReason: RuntimeHoldReason = RuntimeHoldReason::Preimage(pallet_preimage::HoldReason::{{ config.pallet_preimage.parameter.PreimageHoldReason }});
+	pub const PreimageBaseDeposit: Balance =
+        {%- if config.pallet_preimage.parameter.PreimageBaseDeposit is defined %}
+            {{ config.pallet_preimage.parameter.PreimageBaseDeposit }}
+        {% else %}
+            deposit(2, 64)
+        {% endif -%};
+
+	pub const PreimageByteDeposit: Balance =
+        {%- if config.pallet_preimage.parameter.PreimageByteDeposit is defined %}
+            {{ config.pallet_preimage.parameter.PreimageByteDeposit }}
+        {% else %}
+            deposit(0, 1)
+        {% endif -%};
+
+	pub const PreimageHoldReason: RuntimeHoldReason = RuntimeHoldReason::Preimage(
+        pallet_preimage::HoldReason::{
+            {%- if config.pallet_preimage.parameter.PreimageHoldReason is defined %}
+                {{ config.pallet_preimage.parameter.PreimageHoldReason }}
+            {% else %}
+                Preimage
+            {% endif -%}
+        }
+    );
 }
 
 impl pallet_preimage::Config for Runtime {
@@ -1114,10 +1501,26 @@ impl pallet_preimage::Config for Runtime {
 
 {%- if config.pallet_scheduler is defined %}
 parameter_types! {
-	pub MaximumSchedulerWeight: Weight = Perbill::from_percent({{ config.pallet_scheduler.parameter.MaximumSchedulerWeight }}) *
-		RuntimeBlockWeights::get().max_block;
-	pub const MaxScheduledPerBlock: u32 = {{ config.pallet_scheduler.parameter.MaxScheduledPerBlock }};
-	pub const NoPreimagePostponement: Option<u32> = Some({{ config.pallet_scheduler.parameter.NoPreimagePostponement }});
+	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(
+        {%- if config.pallet_scheduler.parameter.MaximumSchedulerWeight is defined %}
+            {{ config.pallet_scheduler.parameter.MaximumSchedulerWeight }}
+        {% else %}
+            80
+        {% endif -%}
+    ) * RuntimeBlockWeights::get().max_block;
+	pub const MaxScheduledPerBlock: u32 =
+        {%- if config.pallet_scheduler.parameter.MaxScheduledPerBlock is defined %}
+            {{ config.pallet_scheduler.parameter.MaxScheduledPerBlock }}
+        {% else %}
+            50
+        {% endif -%};
+	pub const NoPreimagePostponement: Option<u32> = Some(
+        {%- if config.pallet_scheduler.parameter.NoPreimagePostponement is defined %}
+            {{ config.pallet_scheduler.parameter.NoPreimagePostponement }}
+        {% else %}
+            10
+        {% endif -%}
+    );
 }
 
 /// Used the compare the privilege of an origin inside the scheduler.
@@ -1290,8 +1693,18 @@ impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
 
 {%- if config.pallet_move is defined %}
 parameter_types! {
-	pub const MultisigReqExpireTime: BlockNumber = {{ config.pallet_move.parameter.MultisigReqExpireTime }};
-	pub const MaxScriptSigners: u32 = {{ config.pallet_move.parameter.MaxScriptSigners }};
+	pub const MultisigReqExpireTime: BlockNumber =
+        {%- if config.pallet_move.parameter.MultisigReqExpireTime is defined %}
+            {{ config.pallet_move.parameter.MultisigReqExpireTime }}
+        {% else %}
+            50400
+        {% endif -%};
+	pub const MaxScriptSigners: u32 =
+        {%- if config.pallet_move.parameter.MaxScriptSigners is defined %}
+            {{ config.pallet_move.parameter.MaxScriptSigners }}
+        {% else %}
+            8
+        {% endif -%};
 }
 
 impl pallet_move::Config for Runtime {
@@ -1309,9 +1722,27 @@ impl pallet_multisig::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
 	type Currency = Balances;
-	type DepositBase = ConstU128<{{ config.pallet_multisig.parameter.DepositBase }}>;
-	type DepositFactor = ConstU128<{{ config.pallet_multisig.parameter.DepositFactor }}>;
-	type MaxSignatories = ConstU32<{{ config.pallet_multisig.parameter.MaxSignatories }}>;
+	type DepositBase = ConstU128<
+        {%- if config.pallet_multisig.parameter.DepositBase is defined %}
+            {{ config.pallet_multisig.parameter.DepositBase }}
+        {% else %}
+            228_000_000_000_000
+        {% endif -%}
+    >;
+	type DepositFactor = ConstU128<
+        {%- if config.pallet_multisig.parameter.DepositFactor is defined %}
+            {{ config.pallet_multisig.parameter.DepositFactor }}
+        {% else %}
+            32_000_000_000_000
+        {% endif -%}
+    >;
+	type MaxSignatories = ConstU32<
+        {%- if config.pallet_multisig.parameter.MaxSignatories is defined %}
+            {{ config.pallet_multisig.parameter.MaxSignatories }}
+        {% else %}
+            20
+        {% endif -%}
+    >;
 	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
 }
 {% endif -%}
@@ -1363,13 +1794,49 @@ impl pallet_proxy::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type Currency = Balances;
 	type ProxyType = ProxyType;
-	type ProxyDepositBase = ConstU128<{{ config.pallet_proxy.parameter.ProxyDepositBase }}>;
-	type ProxyDepositFactor = ConstU128<{{ config.pallet_proxy.parameter.ProxyDepositFactor }}>;
-	type MaxProxies = ConstU32<{{ config.pallet_proxy.parameter.MaxProxies }}>;
+	type ProxyDepositBase = ConstU128<
+        {%- if config.pallet_proxy.parameter.ProxyDepositBase is defined %}
+            {{ config.pallet_proxy.parameter.ProxyDepositBase }}
+        {% else %}
+            160_000_000_000_000
+        {% endif -%}
+    >;
+	type ProxyDepositFactor = ConstU128<
+        {%- if config.pallet_proxy.parameter.ProxyDepositFactor is defined %}
+            {{ config.pallet_proxy.parameter.ProxyDepositFactor }}
+        {% else %}
+            33_000_000_000_000
+        {% endif -%}
+    >;
+	type MaxProxies = ConstU32<
+        {%- if config.pallet_proxy.parameter.MaxProxies is defined %}
+            {{ config.pallet_proxy.parameter.MaxProxies }}
+        {% else %}
+            100
+        {% endif -%}
+    >;
 	type CallHasher = BlakeTwo256;
-	type MaxPending = ConstU32<{{ config.pallet_proxy.parameter.MaxPending }}>;
-	type AnnouncementDepositBase = ConstU128<{{ config.pallet_proxy.parameter.AnnouncementDepositBase }}>;
-	type AnnouncementDepositFactor = ConstU128<{{ config.pallet_proxy.parameter.AnnouncementDepositFactor }}>;
+	type MaxPending = ConstU32<
+        {%- if config.pallet_proxy.parameter.MaxPending is defined %}
+            {{ config.pallet_proxy.parameter.MaxPending }}
+        {% else %}
+            1000
+        {% endif -%}
+    >;
+	type AnnouncementDepositBase = ConstU128<
+        {%- if config.pallet_proxy.parameter.AnnouncementDepositBase is defined %}
+            {{ config.pallet_proxy.parameter.AnnouncementDepositBase }}
+        {% else %}
+            16_000_000_000_000
+        {% endif -%}
+    >;
+	type AnnouncementDepositFactor = ConstU128<
+        {%- if config.pallet_proxy.parameter.AnnouncementDepositFactor is defined %}
+            {{ config.pallet_proxy.parameter.AnnouncementDepositFactor }}
+        {% else %}
+            64_000_000_000_000
+        {% endif -%}
+    >;
 	type WeightInfo = pallet_proxy::weights::SubstrateWeight<Runtime>;
 }
 {% endif %}
@@ -1527,8 +1994,8 @@ construct_runtime!(
         Contracts: pallet_contracts = 71,
         {% endif %}
 
-        //Move-vm
         {% if config.pallet_move is defined -%}
+        //Move-vm
         MoveModule: pallet_move = 80,
         {% endif -%}
 
@@ -1666,7 +2133,17 @@ impl_runtime_apis! {
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
-			let (account, _) = pallet_evm::Pallet::<Runtime>::account_basic(&address);
+            let account_id = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(address);
+            let nonce = frame_system::Pallet::<Runtime>::account_nonce(&account_id);
+            let balance_free =
+                <Runtime as pallet_evm::Config>::Currency::free_balance(account_id.clone());
+            let balance_reserved =
+                            <Runtime as pallet_evm::Config>::Currency::reserved_balance(account_id);
+            let balance = balance_free.saturating_add(balance_reserved);
+            let account = EVMAccount {
+                    nonce: U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(nonce)),
+                    balance: U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(balance)),
+            };
 			account
 		}
 
