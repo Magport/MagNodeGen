@@ -41,10 +41,25 @@ Before you start, ensure you have the following installed:
    }
    ```
 
+For more details on parameter configuration usage, please refer to [config_usage.md](https://github.com/toints/magnet-node-generator/blob/main/config_usage.md).
+
+
 2. **Run the Python script**
 
-   Execute the Python script to generate the template code:
+   Execute the Python script to start the generate template code service:
 
    ```sh
    python main.py
    ```
+
+3. **Test**
+
+The test directory contains test cases for generating code and downloading compressed files.
+
+`gen_code.py` includes test cases for generating code using templates.
+
+`download_zip.py` contains test cases for downloading the compressed file of the code generated in the previous step to your local machine.
+
+Before using the test cases, please call `/generate-key` to generate the apiKey and secret, and then add the apiKey information to the test cases.
+
+For more usage of code generator, please refer to [generator_usage.md](https://github.com/toints/magnet-node-generator/blob/main/generator_usage.md).
