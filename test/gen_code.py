@@ -13,8 +13,8 @@ with open(api_keys_file, 'r') as f:
     api_key = list(api_keys.keys())[0]
     secret = api_keys[api_key]['secret']
 
-task_id = '8f401dc7b755d4c7150e01be835d3847'
-url = 'http://127.0.0.1:5000/generate-code'
+task_id = '8f401dc7b755d4c7150e01be835d3848'
+url = 'http://43.133.40.159:5001/generate-code'
 
 with open(config_file, 'r') as f:
     config = json.load(f)

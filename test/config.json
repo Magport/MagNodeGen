@@ -474,8 +474,8 @@
       "MAX_POV_SIZE": "5 * 1024 * 1024"
     },
     "chain_spec_dev_constant": {
-      "tokenSymbol": "",
-      "tokenDecimals": "",
+      "tokenSymbol": "DOT",
+      "tokenDecimals": 18,
       "ss58Format": 42,
       "relay_chain": "rococo-local",
       "para_id": 4800,
@@ -504,8 +504,8 @@
       "rootAccountFromAddress": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
     },
     "chain_spec_local_testnet_constant": {
-      "tokenSymbol": "",
-      "tokenDecimals": "",
+      "tokenSymbol": "DOT",
+      "tokenDecimals": 18,
       "ss58Format": 42,
       "relay_chain": "rococo-local",
       "para_id": 4800,
