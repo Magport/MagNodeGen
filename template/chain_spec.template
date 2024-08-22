@@ -341,7 +341,7 @@ fn testnet_genesis(
 		{% endif -%}
 		{% if config.pallet_liquidation is defined -%}
 		"liquidation":{
-			"adminKey": Some(root.clone()),
+			"adminKey": Some(get_account_id_from_address("{{ config.pallet_liquidation.chain_spec.adminKey }}")),
 			"systemRatio": {{ config.pallet_liquidation.chain_spec.systemRatio }},
 			"treasuryRatio": {{ config.pallet_liquidation.chain_spec.treasuryRatio }},
 			"operationRatios": vec![
