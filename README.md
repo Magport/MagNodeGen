@@ -8,6 +8,8 @@ Before you start, ensure you have the following installed:
 - [Git](https://git-scm.com/)
 - [Python 3](https://www.python.org/)
 - [Jinja2](https://pypi.org/project/Jinja2/) (`pip install jinja2`)
+- [Rust](https://www.rust-lang.org/tools/install) (`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  `)
 
 ## Steps
 
