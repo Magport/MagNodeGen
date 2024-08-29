@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/tmp/generated-code/Magnet" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tasks/58c2bd1b089e19f7b9b9efc6b639d2d4/Magnet" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/tmp/Magnet" vcs="Git" />
   </component>
 </project>

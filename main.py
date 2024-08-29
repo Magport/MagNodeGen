@@ -146,6 +146,7 @@ def generate_code_endpoint():
 
         return jsonify({"success": True, "taskId": task_id, "message": "", "md5": zip_md5})
     except Exception as e:
+        print(e)
         return jsonify({"success": False, "taskId": task_id, "message": str(e)}), 500
 
 @app.route('/task-status/<task_id>', methods=['GET'])
