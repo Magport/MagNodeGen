@@ -129,6 +129,7 @@ def generate_code_endpoint():
         generate_code(config_path, 'template/runtime_lib.template', os.path.join(dest_dir, 'runtime/src/lib.rs'))
         generate_code(config_path, 'template/chain_spec.template', os.path.join(dest_dir, 'node/src/chain_spec.rs'))
         generate_code(config_path, 'template/rpc_mod.template', os.path.join(dest_dir, 'node/src/rpc/mod.rs'))
+        generate_code(config_path, 'template/liquidation_lib.template', os.path.join(dest_dir, 'pallets/liquidation/src/lib.rs'))
 
         subprocess.run(['cargo', '+stable', 'fmt', '--all'], cwd=dest_dir, check=True)
 
