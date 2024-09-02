@@ -101,12 +101,11 @@ use weights::{BlockExecutionWeight, ExtrinsicBaseWeight};
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId, PersistedValidationData};
 {%- if config.pallet_bulk is defined %}
 pub use pallet_bulk;
-{% endif -%}
-{%- if config.pallet_liquidation is defined %}
-use pallet_liquidation::{BulkGasCost, OrderGasCost};
+use pallet_liquidation::BulkGasCost;
 {% endif -%}
 {%- if config.pallet_on_demand is defined %}
 pub use pallet_on_demand;
+use pallet_liquidation::OrderGasCost;
 {% endif -%}
 use xcm::latest::prelude::{
 	Asset as MultiAsset, BodyId, InteriorLocation as InteriorMultiLocation,
@@ -1083,7 +1082,13 @@ impl pallet_liquidation::Config for Runtime {
 	type Currency = Balances;
 	type XcmSender = xcm_config::XcmRouter;
 	type WeightToFee = WeightToFee;
+
+	{%- if config.pallet_bulk is defined %}
+	type BulkGasCost = BulkGasCostHandler;
+	{% endif -%}
+	{%- if config.pallet_on_demand is defined %}
 	type OrderGasCost = OrderGasCostHandler;
+	{% endif -%}
 	type ExistentialDeposit = ExistDeposit;
 	type SystemAccountName = SystemAccountName;
 	type TreasuryAccountName = TreasuryAccountName;
@@ -1936,10 +1941,9 @@ impl_runtime_apis! {
 			OrderPallet::reach_txpool_threshold(gas_balance, core_price)
 		}
 	}
-{% endif -%}
-{%- if config.pallet_bulk is defined -%}
+{% endif %}
+{% if config.pallet_bulk is defined -%}
 	impl mp_coretime_bulk::BulkRuntimeApi<Block> for Runtime {
-
 		fn rpc_url()-> Vec<u8>{
 			BulkPallet::rpc_url()
 		}
@@ -2131,7 +2135,7 @@ impl_runtime_apis! {
 			let params = (&config, &whitelist);
 			add_benchmarks!(params, batches);
 
-			if batches is_empty() { return Err("Benchmark not found for this pallet.".into()) }
+			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
 		}
 	}

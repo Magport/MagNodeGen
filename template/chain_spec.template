@@ -3,11 +3,14 @@ use parachain_magnet_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_core::{crypto::Ss58Codec, sr25519, Pair, Public, H160, U256};
+use sp_core::{crypto::Ss58Codec, ByteArray, sr25519, Pair, Public, H160, U256};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_runtime::AccountId32;
 use sp_std::marker::PhantomData;
 use std::{collections::BTreeMap, str::FromStr};
+{% if config.pallet_session is defined -%}
+use parachain_magnet_runtime::SessionKeys;
+{% endif %}
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec =
@@ -200,7 +203,7 @@ fn testnet_genesis(
 		get_account_id_from_address("5CFuj7WxZAyinLxoqAJ8NH4yEEVXUUSHi9LRhodC3HyzHvN4");
 
 	let evm_accounts = {
-		let mut map = BTreeMap::new();
+		let mut map: BTreeMap<H160, fp_evm::GenesisAccount> = BTreeMap::new();
 
         {%- if config.pallet_evm is defined %}
 		{% for account in config.pallet_evm.chain_spec.accounts -%}
@@ -223,47 +226,62 @@ fn testnet_genesis(
 	serde_json::json!({
 	    {% if config.pallet_balances is defined -%}
 		"balances": {
-			"balances": endowed_accounts.iter().cloned().map(|k| (k, {{ config.pallet_balances.chain_spec.endowed_accounts_supply }})).collect::<Vec<_>>(),
+			"balances": endowed_accounts.iter().cloned().map(|k| (k, {{ config.pallet_balances.chain_spec.endowed_accounts_supply }})).collect::<Vec<(AccountId, u128)>>(),
 		},
 		{% endif -%}
 		{% if config.pallet_assets is defined -%}
 		"assets": {
-			"assets": vec![
-            {% for asset in config.pallet_assets.chain_spec.assets %}
-            (
-                {{ asset.AssetsId }},
-                get_account_id_from_address("{{ asset.OwnerFromAddress }}"),
-                {{ asset.IsSufficient }},
-                {{ asset.MinBalance }}
-            ){% if not loop.last %},{% endif %}
-            {% endfor %}
-			],
-			// Genesis metadata: Vec<(id, name, symbol, decimals)>
-			"metadata": vec![
-            {% for meta in config.pallet_assets.chain_spec.metadata -%}
-            (
-                {{ meta.AssetsId }},
-                b"{{ meta.Name }}".to_vec(),
-                b"{{ meta.Symbol }}".to_vec(),
-                {{ meta.Decimals }}
-            ){% if not loop.last %},{% endif %}
-            {% endfor %}
-			],
-			// Genesis accounts: Vec<(id, account_id, balance)>
-			"accounts": vec![
-            {% for account in config.pallet_assets.chain_spec.accounts %}
-            (
-                {{ account.AssetsId }},
-                get_account_id_from_address("{{ account.AccountIdFromAddress }}"),
-                {{ account.Balance }}
-            ){% if not loop.last %},{% endif %}
-            {% endfor -%}
-			],
+		"assets": 
+		{% if config.pallet_assets.chain_spec.assets | length == 0 %}
+		Vec::<(u32, u32, bool, u128)>::new(), 
+		{% else %}
+		vec![
+		{% for asset in config.pallet_assets.chain_spec.assets %}
+		(
+		 {{ asset.AssetsId }},
+		 get_account_id_from_address("{{ asset.OwnerFromAddress }}"),
+		 {{ asset.IsSufficient }},
+		 {{ asset.MinBalance }}
+		){% if not loop.last %},{% endif %}
+		{% endfor %}
+		],
+		{% endif %}
+
+		"metadata": 
+		{% if config.pallet_assets.chain_spec.metadata | length == 0 %}
+		Vec::<(u32, String, String, u8)>::new(), 
+			{% else %}
+		vec![
+		{% for meta in config.pallet_assets.chain_spec.metadata -%}
+		(
+		 {{ meta.AssetsId }},
+		 b"{{ meta.Name }}".to_vec(),
+		 b"{{ meta.Symbol }}".to_vec(),
+		 {{ meta.Decimals }}
+		){% if not loop.last %},{% endif %}
+		{% endfor %}
+		],
+		{% endif %}
+
+		"accounts": 
+		{% if config.pallet_assets.chain_spec.accounts | length == 0 %}
+		Vec::<(u32, AccountId, u128)>::new(), 
+			{% else %}
+		vec![
+		{% for account in config.pallet_assets.chain_spec.accounts %}
+		(
+		 {{ account.AssetsId }},
+		 get_account_id_from_address("{{ account.AccountIdFromAddress }}"),
+		 {{ account.Balance }}
+		){% if not loop.last %},{% endif %}
+		{% endfor -%}
+		],
+		{% endif %}
 		},
 		{% endif %}
 		{% if config.pallet_assets_bridge is defined -%}
 		"assetsBridge": {
-			"adminKey": Some(root.clone()),
+			"adminKey": Some(root.clone()) as Option<AccountId>,
 		},
 		{% endif -%}
 		{% if config.pallet_collective is defined -%}
@@ -272,17 +290,17 @@ fn testnet_genesis(
 				.iter()
 				.enumerate()
 				.filter_map(|(idx, acc)| if idx % 2 == 0 { Some(acc.clone()) } else { None })
-				.collect::<Vec<_>>(),
+				.collect::<Vec<AccountId>>(),
 		},
 		{% endif -%}
 		{% if config.parachain_info is defined -%}
 		"parachainInfo": {
-			"parachainId": {{ config.parachain_info.chain_spec.parachainId }}.into(),
+			"parachainId": id,
 		},
 		{% endif -%}
 		{% if config.pallet_collator_selection is defined -%}
 		"collatorSelection": {
-			"invulnerables": invulnerables.iter().cloned().map(|(acc, _)| acc).collect::<Vec<_>>(),
+			"invulnerables": invulnerables.iter().cloned().map(|(acc, _)| acc).collect::<Vec<AccountId>>(),
 			"candidacyBond": EXISTENTIAL_DEPOSIT * 16,
 		},
 		{% endif -%}
@@ -297,7 +315,7 @@ fn testnet_genesis(
 						template_session_keys(aura), // session keys
 					)
 				})
-				.collect::<Vec<_>>(),
+				.collect::<Vec<(AccountId, AccountId, SessionKeys)>>(),
 		},
 		{% endif -%}
 		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
@@ -314,7 +332,7 @@ fn testnet_genesis(
 		// EVM compatibility
 		{% if config.pallet_evm_chain_id is defined -%}
 		"evmChainId": {
-			"chainId": u64::from(u32::from({{ config.pallet_evm_chain_id.chain_spec.chainId }})),
+			"chainId": u64::from(u32::from(id)),
 		},
 		{% endif -%}
 
