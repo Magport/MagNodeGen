@@ -1506,7 +1506,7 @@ construct_runtime!(
 
         //Magnet
         {% if config.pallet_on_demand is defined -%}
-        // OrderPallet: pallet_on_demand = 51,
+        OrderPallet: pallet_on_demand = 51,
         {% endif -%}
         {% if config.pallet_evm_utils is defined -%}
         EVMUtils: pallet_evm_utils = 60,
