@@ -317,7 +317,7 @@ pub mod pallet {
 					return;
 				},
 			};
-			{% endif %}
+			{% endif -%}
 
 			let reserved_balance: BalanceOf<T> = <T as pallet::Config>::ExistentialDeposit::get()
 				.try_into()
@@ -517,16 +517,11 @@ pub mod pallet {
 
 			let _send_treasury_profit = Self::send_assets_to_relaychain_treasury(
 				origin,
-				treasury_account.clone.into(),
+				treasury_account.clone().into(),
 				treasury_amount,
 			)?;
 
 			let mut transfers = Vec::new();
-			/*
-			let treasury_account_profit =
-				treasury_amount.try_into().unwrap_or_else(|_| Zero::zero());
-			transfers.push((treasury_account, treasury_account_profit));
-			*/
 			let treasury_amount_parachain = treasury_amount * PARACHAIN_TO_RELAYCHAIN_UNIT;
 			let treasury_account_profit =
 				treasury_amount_parachain.try_into().unwrap_or_else(|_| Zero::zero());
