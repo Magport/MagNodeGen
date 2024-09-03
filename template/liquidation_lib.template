@@ -82,8 +82,7 @@ pub mod pallet {
 		///get real weight cost from coreTime placeOrder pallet
 		type OrderGasCost: crate::OrderGasCost<Self>;
 		{% endif -%}
-
-		{%- if config.pallet_bulk is defined %}
+		{%- if config.pallet_bulk is defined -%}
 		///get real weight cost from bulk placeOrder pallet
 		type BulkGasCost: crate::BulkGasCost<Self>;
 		{% endif -%}

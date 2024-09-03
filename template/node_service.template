@@ -648,7 +648,9 @@ fn start_consensus(
 						"Failed to create bulk inherent",
 					)
 				})?;
+				{%if config.pallet_on_demand is not defined %}
 				Ok(bulk_inherent)
+				{% endif -%}
 				{% endif -%}
 
 				{% if config.pallet_on_demand is defined -%}
@@ -671,8 +673,13 @@ fn start_consensus(
 						"Failed to create order inherent",
 					)
 				})?;
+				{%if config.pallet_bulk is not defined %}
 				Ok(order_inherent)
 				{% endif -%}
+				{% endif -%}
+				{% if config.pallet_on_demand is defined and config.pallet_bulk is defined %}
+                    Ok((bulk_inherent, order_inherent))
+                {% endif %}
 			}
 		},
 
