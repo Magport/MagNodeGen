@@ -2,7 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/test/tmp/0901/generated-code/Magnet" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/test/tmp/generator/Magnet" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/test/local-generator/Magnet" vcs="Git" />
   </component>
 </project>
