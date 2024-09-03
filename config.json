@@ -369,7 +369,8 @@
     "optional": false,
     "parameter": {
       "SystemPotName": "system",
-      "DefaultBidThreshold": 8
+      "DefaultBidThreshold": 8,
+      "Enable": true
     },
     "chain_spec": {},
     "rpc_mod": false
@@ -525,6 +526,13 @@
   },
   "pallet_contracts": {
     "index": 44,
+    "optional": false,
+    "parameter": {},
+    "chain_spec": {},
+    "rpc_mod": false
+  },
+  "openGov": {
+    "index": 45,
     "optional": false,
     "parameter": {},
     "chain_spec": {},

@@ -135,9 +135,11 @@ use precompiles::FrontierPrecompiles;
 use pallet_pot::PotNameBtreemap;
 {% endif %}
 
+{% if config.openGov is defined -%}
 // Governance and configurations.
 pub mod governance;
 use governance::{pallet_custom_origins, AuctionAdmin};
+{% endif -%}
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
@@ -1417,21 +1419,13 @@ construct_runtime!(
         {% if config.pallet_sudo is defined -%}
         Sudo: pallet_sudo = 14,
         {% endif -%}
-        {% if config.pallet_conviction_voting is defined -%}
+        {% if config.openGov is defined -%}
         ConvictionVoting: pallet_conviction_voting = 16,
-        {% endif -%}
-        {% if config.pallet_referenda is defined -%}
         Referenda: pallet_referenda = 17,
-        {% endif -%}
-        {% if config.pallet_ranked_collective is defined -%}
         //  pub type FellowshipCollectiveInstance = pallet_ranked_collective::Instance1;
         FellowshipCollective: pallet_ranked_collective::<Instance1> = 18,
-        {% endif -%}
-        {% if config.pallet_referenda_instance2 is defined -%}
         // pub type FellowshipReferendaInstance = pallet_referenda::Instance2;
         FellowshipReferenda: pallet_referenda::<Instance2> = 19,
-        {% endif -%}
-        {% if config.pallet_custom_origins is defined -%}
         Origins: pallet_custom_origins::{Origin} = 52,
         {% endif -%}
         {% if config.pallet_whitelist is defined -%}
