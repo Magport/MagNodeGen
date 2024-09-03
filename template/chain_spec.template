@@ -80,23 +80,21 @@ pub fn template_session_keys(keys: AuraId) -> parachain_magnet_runtime::SessionK
 pub fn development_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
-    {% if config.chain_spec_dev_constant.tokenSymbol is defined %}
+    {%- if config.chain_spec_dev_constant.tokenSymbol is defined %}
     properties.insert("tokenSymbol".into(), "{{ config.chain_spec_dev_constant.tokenSymbol }}".into());
     {% else %}
     properties.insert("tokenSymbol".into(), "DOT".into());
-    {% endif %}
-
-    {% if config.chain_spec_dev_constant.tokenDecimals is defined %}
+    {% endif -%}
+    {%- if config.chain_spec_dev_constant.tokenDecimals is defined %}
     properties.insert("tokenDecimals".into(), {{ config.chain_spec_dev_constant.tokenDecimals }}.into());
     {% else %}
     properties.insert("tokenDecimals".into(), 18.into());
-    {% endif %}
-
-    {% if config.chain_spec_dev_constant.ss58Format is defined %}
+    {% endif -%}
+    {%- if config.chain_spec_dev_constant.ss58Format is defined %}
     properties.insert("ss58Format".into(), {{ config.chain_spec_dev_constant.ss58Format }}.into());
     {% else %}
     properties.insert("ss58Format".into(), 42.into());
-    {% endif %}
+    {% endif -%}
 
 	ChainSpec::builder(
 		parachain_magnet_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
@@ -117,12 +115,12 @@ pub fn development_config() -> ChainSpec {
                 get_account_id_from_address("{{ collator }}"),
                 get_collator_keys_from_address("{{ collator }}"),
             ){% if not loop.last %},{% endif %}
-            {% endfor %}
+            {% endfor -%}
         ],
         vec![
             {% for account in config.chain_spec_dev_constant.endowedAccountsFromAddress -%}
             get_account_id_from_address("{{ account }}"){% if not loop.last %},{% endif %}
-            {% endfor %}
+            {% endfor -%}
         ],
 		get_account_id_from_address("{{ config.chain_spec_dev_constant.rootAccountFromAddress }}"),
 		{{ config.chain_spec_dev_constant.para_id }}.into(),
@@ -135,23 +133,21 @@ pub fn development_config() -> ChainSpec {
 pub fn local_testnet_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
-    {% if config.chain_spec_local_testnet_constant.tokenSymbol is defined %}
+    {%- if config.chain_spec_local_testnet_constant.tokenSymbol is defined -%}
     properties.insert("tokenSymbol".into(), "{{ config.chain_spec_local_testnet_constant.tokenSymbol }}".into());
     {% else %}
     properties.insert("tokenSymbol".into(), "DOT".into());
-    {% endif %}
-
-    {% if config.chain_spec_local_testnet_constant.tokenDecimals is defined %}
+    {% endif -%}
+    {%- if config.chain_spec_local_testnet_constant.tokenDecimals is defined -%}
     properties.insert("tokenDecimals".into(), {{ config.chain_spec_local_testnet_constant.tokenDecimals }}.into());
     {% else %}
     properties.insert("tokenDecimals".into(), 18.into());
-    {% endif %}
-
-    {% if config.chain_spec_local_testnet_constant.ss58Format is defined %}
+    {% endif -%}
+    {%- if config.chain_spec_local_testnet_constant.ss58Format is defined -%}
     properties.insert("ss58Format".into(), {{ config.chain_spec_local_testnet_constant.ss58Format }}.into());
     {% else %}
     properties.insert("ss58Format".into(), 42.into());
-    {% endif %}
+    {% endif -%}
 
 	#[allow(deprecated)]
 	ChainSpec::builder(
@@ -173,12 +169,12 @@ pub fn local_testnet_config() -> ChainSpec {
                 get_account_id_from_address("{{ collator }}"),
                 get_collator_keys_from_address("{{ collator }}"),
             ){% if not loop.last %},{% endif %}
-            {% endfor %}
+            {% endfor -%}
         ],
         vec![
             {% for account in config.chain_spec_local_testnet_constant.endowedAccountsFromAddress -%}
             get_account_id_from_address("{{ account }}"){% if not loop.last %},{% endif %}
-            {% endfor %}
+            {% endfor -%}
         ],
         get_account_id_from_address("{{ config.chain_spec_local_testnet_constant.rootAccountFromAddress }}"),
 		{{ config.chain_spec_local_testnet_constant.para_id }}.into(),
@@ -232,9 +228,9 @@ fn testnet_genesis(
 		{% if config.pallet_assets is defined -%}
 		"assets": {
 		"assets": 
-		{% if config.pallet_assets.chain_spec.assets | length == 0 %}
+		{%- if config.pallet_assets.chain_spec.assets | length == 0 -%}
 		Vec::<(u32, u32, bool, u128)>::new(), 
-		{% else %}
+		{%- else -%}
 		vec![
 		{% for asset in config.pallet_assets.chain_spec.assets %}
 		(
@@ -243,14 +239,14 @@ fn testnet_genesis(
 		 {{ asset.IsSufficient }},
 		 {{ asset.MinBalance }}
 		){% if not loop.last %},{% endif %}
-		{% endfor %}
+		{% endfor -%}
 		],
 		{% endif %}
 
 		"metadata": 
-		{% if config.pallet_assets.chain_spec.metadata | length == 0 %}
+		{%- if config.pallet_assets.chain_spec.metadata | length == 0 -%}
 		Vec::<(u32, String, String, u8)>::new(), 
-			{% else %}
+			{%- else -%}
 		vec![
 		{% for meta in config.pallet_assets.chain_spec.metadata -%}
 		(
@@ -259,14 +255,14 @@ fn testnet_genesis(
 		 b"{{ meta.Symbol }}".to_vec(),
 		 {{ meta.Decimals }}
 		){% if not loop.last %},{% endif %}
-		{% endfor %}
+		{% endfor -%}
 		],
 		{% endif %}
 
 		"accounts": 
-		{% if config.pallet_assets.chain_spec.accounts | length == 0 %}
+		{%- if config.pallet_assets.chain_spec.accounts | length == 0 -%}
 		Vec::<(u32, AccountId, u128)>::new(), 
-			{% else %}
+			{%- else -%}
 		vec![
 		{% for account in config.pallet_assets.chain_spec.accounts %}
 		(
@@ -278,7 +274,7 @@ fn testnet_genesis(
 		],
 		{% endif %}
 		},
-		{% endif %}
+		{% endif -%}
 		{% if config.pallet_assets_bridge is defined -%}
 		"assetsBridge": {
 			"adminKey": Some(root.clone()) as Option<AccountId>,
@@ -352,7 +348,7 @@ fn testnet_genesis(
 			"genesisHash": U256::from_str("{{ config.pallet_bulk.chain_spec.genesisHash }}").expect("internal U256 is valid; qed")
 		},
 		{% endif -%}
-		{% if config.pallet_on_demand is defined -%}
+		{%- if config.pallet_on_demand is defined -%}
         "orderPallet": {
             "slotWidth": {{ config.pallet_on_demand.chain_spec.slotWidth }},
             "priceLimit": {{ config.pallet_on_demand.chain_spec.priceLimit }},
@@ -372,6 +368,12 @@ fn testnet_genesis(
 			"collatorRatio": {{ config.pallet_liquidation.chain_spec.collatorRatio }},
 			"minLiquidationThreshold": {{ config.pallet_liquidation.chain_spec.minLiquidationThreshold }},
 			"profitDistributionCycle": {{ config.pallet_liquidation.chain_spec.profitDistributionCycle }},
+		}
+		{% endif -%}
+		{%- if config.pallet_assurance is defined -%}
+		"assurance": {
+			"bid_threshold": {{ config.pallet_assurance.parameter.DefaultBidThreshold }},
+			"enable": {{ 'true' if config.pallet_assurance.parameter.Enable is defined and config.pallet_assurance.parameter.Enable else 'false' }},
 		}
 		{% endif -%}
 	})
