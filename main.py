@@ -132,6 +132,8 @@ def generate_code_endpoint():
         generate_code(config_path, 'template/liquidation_lib.template', os.path.join(dest_dir, 'pallets/liquidation/src/lib.rs'))
         generate_code(config_path, 'template/node_service.template', os.path.join(dest_dir, 'node/src/service.rs'))
         generate_code(config_path, 'template/Cargo.toml.template', os.path.join(dest_dir, 'Cargo.toml'))
+        generate_code(config_path, 'template/node_Cargo.toml.template', os.path.join(dest_dir, 'node/Cargo.toml'))
+        generate_code(config_path, 'template/runtime_Cargo.toml.template', os.path.join(dest_dir, 'runtime/Cargo.toml'))
 
         subprocess.run(['cargo', '+stable', 'fmt', '--all'], cwd=dest_dir, check=True)
 
