@@ -216,7 +216,9 @@ std = [
 	"pallet-insecure-randomness-collective-flip/std",
 	"pallet-contracts/std",
 	"cumulus-primitives-aura/std",
+    {% if config.pallet_move is defined -%}
 	"pallet-move/std",
+    {% endif -%}
 	"pallet-multisig/std",
 	"pallet-proxy/std",
 	"pallet-bulk/std",
@@ -264,7 +266,9 @@ runtime-benchmarks = [
 	"pallet-ranked-collective/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-contracts/runtime-benchmarks",
+    {% if config.pallet_move is defined -%}
 	"pallet-move/runtime-benchmarks",
+    {% endif -%}
 	"pallet-multisig/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-bulk/runtime-benchmarks",
@@ -320,7 +324,9 @@ try-runtime = [
 	"pallet-scheduler/try-runtime",
 	"pallet-insecure-randomness-collective-flip/try-runtime",
 	"pallet-contracts/try-runtime",
+    {% if config.pallet_move is defined -%}
 	"pallet-move/try-runtime",
+    {% endif -%}
 	"pallet-multisig/try-runtime",
 	"pallet-proxy/try-runtime",
 ]
