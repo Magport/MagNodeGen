@@ -372,7 +372,7 @@ fn testnet_genesis(
 		{% endif -%}
 		{%- if config.pallet_assurance is defined -%}
 		"assurance": {
-			"bid_threshold": {{ config.pallet_assurance.parameter.DefaultBidThreshold }},
+			"bidThreshold": {{ config.pallet_assurance.parameter.DefaultBidThreshold }},
 			"enable": {{ 'true' if config.pallet_assurance.parameter.Enable is defined and config.pallet_assurance.parameter.Enable else 'false' }},
 		}
 		{% endif -%}
